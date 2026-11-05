@@ -1,12 +1,12 @@
 package com.burtwelding.fabapp
 
+import org.kimplify.deci.Deci
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SharedCommonTest {
 
     @Test
-    fun example() {
-        assertEquals(3, 1 + 2)
+    fun testFractionalInches () {
     }
 }

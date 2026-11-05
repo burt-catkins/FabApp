@@ -18,6 +18,7 @@ import org.jetbrains.compose.resources.painterResource
 
 import fabapp.shared.generated.resources.Res
 import fabapp.shared.generated.resources.compose_multiplatform
+import org.kimplify.deci.Deci
 
 @Composable
 @Preview

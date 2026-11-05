@@ -1,7 +1,8 @@
 package com.burtwelding.fabapp.storage
 
 import com.burtwelding.fabapp.Item
+import kotlin.uuid.Uuid
 
 object TempItemMap {
-    val items: MutableMap<String, Item> = mutableMapOf()
+    val items: MutableMap<Uuid, Item> = mutableMapOf()
 }

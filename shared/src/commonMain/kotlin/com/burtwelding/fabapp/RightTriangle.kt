@@ -2,11 +2,13 @@ package com.burtwelding.fabapp
 
 import com.burtwelding.fabapp.Calculator.convertDegreesToRadians
 import com.burtwelding.fabapp.Calculator.convertRadiansToDegrees
+import com.burtwelding.fabapp.storage.ItemHandle
 import org.kimplify.deci.Deci
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tan
+import kotlin.uuid.Uuid
 
 class RightTriangle {
 
@@ -25,13 +27,13 @@ class RightTriangle {
         constructor(type: OperandType, number: Number<*>) :
                 this(type, ItemHandle.direct(number))
 
-        constructor(type: OperandType, key: String) :
+        constructor(type: OperandType, key: Uuid) :
                 this(type, ItemHandle.saved(key))
 
         val value: Number<*>?
             get() = handle.value as? Number<*>
 
-        fun save(key: String) = handle.save(key)
+        fun save(key: Uuid) = handle.save(key)
     }
 
     private var operand1: Operand

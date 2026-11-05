@@ -17,14 +17,21 @@ class RightTriangle {
         TOP_ANGLE,
         BOTTOM_ANGLE
     }
-    data class Operand (
+
+    class Operand private constructor(
         val type: OperandType,
-        val numberKey: String?
+        private val handle: ItemHandle
     ) {
-        val value: Number<UnitType>?
-            get() = numberKey?.let {
-                TempItemMap.items[numberKey] as Number<UnitType>?
-            }
+        constructor(type: OperandType, number: Number<*>) :
+                this(type, ItemHandle.direct(number))
+
+        constructor(type: OperandType, key: String) :
+                this(type, ItemHandle.saved(key))
+
+        val value: Number<*>?
+            get() = handle.value as? Number<*>
+
+        fun save(key: String) = handle.save(key)
     }
 
     private var operand1: Operand

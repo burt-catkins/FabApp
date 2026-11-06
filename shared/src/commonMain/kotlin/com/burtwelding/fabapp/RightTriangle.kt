@@ -8,98 +8,105 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tan
-import kotlin.uuid.Uuid
 
-class RightTriangle {
+val t = RightTriangle (
+    operand1 = RightTriangle.Operand.Run(ItemHandle(Length(Deci(1)))),
+    operand2 = RightTriangle.Operand.Rise(ItemHandle(Length(Deci(1)))),
+)
 
-    enum class OperandType {
-        RISE,
-        RUN,
-        DIAGONAL,
-        TOP_ANGLE,
-        BOTTOM_ANGLE
+class RightTriangle(
+    private val operand1: Operand,
+    private val operand2: Operand,
+) : Item() {
+
+    sealed interface Operand {
+        class Rise(val handle: ItemHandle<Length>) : Operand
+        class Run(val handle: ItemHandle<Length>) : Operand
+        class Diagonal(val handle: ItemHandle<Length>) : Operand
+        class TopAngle(val handle: ItemHandle<Angle>) : Operand
+        class BottomAngle(val handle: ItemHandle<Angle>) : Operand
     }
 
-    class Operand private constructor(
-        val type: OperandType,
-        private val handle: ItemHandle
-    ) {
-        constructor(type: OperandType, number: Number<*>) :
-                this(type, ItemHandle.direct(number))
-
-        constructor(type: OperandType, key: Uuid) :
-                this(type, ItemHandle.saved(key))
-
-        val value: Number<*>?
-            get() = handle.value as? Number<*>
-
-        fun save(key: Uuid) = handle.save(key)
+    init {
+        require(operand1::class != operand2::class) { "Both operands are the same type" }
     }
 
-    private var operand1: Operand
-    private var operand2: Operand
+    fun getRise() = this.calculation[Operand.Rise::class]
+    fun getRun() = this.calculation[Operand.Run::class]
+    fun getDiagonal() = this.calculation[Operand.Diagonal::class]
+    fun getTopAngle() = this.calculation[Operand.TopAngle::class]
+    fun getBottomAngle() = this.calculation[Operand.BottomAngle::class]
 
-    fun getRise() = this.calculation[OperandType.RISE]
-    fun getRun() = this.calculation[OperandType.RUN]
-    fun getDiagonal() = this.calculation[OperandType.DIAGONAL]
-    fun getTopAngle() = this.calculation[OperandType.TOP_ANGLE]
-    fun getBottomAngle() = this.calculation[OperandType.BOTTOM_ANGLE]
+    fun calculate(firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?) {
+        require(firstOperand::class != secondOperand::class) { "Both operands are the same type" }
 
-    constructor (firstOperand: Operand, secondOperand: Operand) {
-        firstOperand.
+        this.calculation = mapOf(
+            Operand.Rise::class to getRise(firstOperand, secondOperand, lengthUnitTypeWanted),
+            Operand.Run::class to getRun(firstOperand, secondOperand, lengthUnitTypeWanted),
+            Operand.Diagonal::class to getDiagonal(firstOperand, secondOperand, lengthUnitTypeWanted),
+            Operand.TopAngle::class to getTopAngle(firstOperand, secondOperand, lengthUnitTypeWanted),
+            Operand.BottomAngle::class to getBottomAngle(firstOperand, secondOperand, lengthUnitTypeWanted),
+        )
     }
-    }
 
-    fun calculate (firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?) {
-        if (firstOperand.type == secondOperand.type) throw IllegalArgumentException("Both Operands are the same type!")
-        this.calculation = OperandType.entries.associateWith { operandType ->
-            when (operandType) {
-                OperandType.RISE -> getRise(firstOperand, secondOperand, lengthUnitTypeWanted)
-                OperandType.RUN -> getRun(firstOperand, secondOperand, lengthUnitTypeWanted)
-                OperandType.DIAGONAL -> getDiagonal(firstOperand, secondOperand, lengthUnitTypeWanted)
-                OperandType.TOP_ANGLE -> getTopAngle(firstOperand, secondOperand, lengthUnitTypeWanted)
-                OperandType.BOTTOM_ANGLE -> getBottomAngle(firstOperand, secondOperand, lengthUnitTypeWanted)
+    fun getRise(firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?): Length? {
+        if (secondOperand is Operand.Rise) return secondOperand.handle.value
+
+        return when (firstOperand) {
+            is Operand.Rise -> firstOperand.handle.value
+            is Operand.Run -> if (secondOperand is Operand.Diagonal) {
+                riseFrom(firstOperand, secondOperand, lengthUnitTypeWanted)
+            } else {
+                null
             }
+            is Operand.Diagonal -> if (secondOperand is Operand.Run) {
+                riseFrom(secondOperand, firstOperand, lengthUnitTypeWanted)
+            } else {
+                null
+            }
+            is Operand.TopAngle, is Operand.BottomAngle -> null
         }
     }
 
-    fun getRise (firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?): Number<UnitType> {
-        if (firstOperand.type == OperandType.RISE) return firstOperand.value
-        if (secondOperand.type == OperandType.RISE) return secondOperand.value
-        when (firstOperand.type) {
-            OperandType.RUN -> when (secondOperand.type) {
-                OperandType.DIAGONAL -> {
-                    val rise = Deci(
-                        sqrt(
-                            (secondOperand.value.baseUnitDecimalValue.times(secondOperand.value.baseUnitDecimalValue))
-                                .minus(firstOperand.value.baseUnitDecimalValue.times(firstOperand.value.baseUnitDecimalValue)).toDouble()
-                        )
-                    )
-                    return Number<>
-                }
-            }
-            OperandType.DIAGONAL -> when (secondOperand.type) { }
-            OperandType.TOP_ANGLE -> when (secondOperand.type) { }
-            OperandType.BOTTOM_ANGLE -> when (secondOperand.type) {}
-    }
-    fun getRun (firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?): Number<UnitType> {
-        if (firstOperand.type == OperandType.RUN) return firstOperand.value
-        if (secondOperand.type == OperandType.RUN) return secondOperand.value
-    }
-    fun getDiagonal (firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?): Number<UnitType> {
-        if (firstOperand.type == OperandType.DIAGONAL) return firstOperand.value
-        if (secondOperand.type == OperandType.DIAGONAL) return secondOperand.value
-    }
-    fun getTopAngle (firstOperand: Operand, secondOperand: Operand): Number<UnitType> {
-        if (firstOperand.type == OperandType.TOP_ANGLE) return firstOperand.value
-        if (secondOperand.type == OperandType.TOP_ANGLE) return secondOperand.value
-    }
-    fun getBottomAngle (firstOperand: Operand, secondOperand: Operand): Number<UnitType> {
-        if (firstOperand.type == OperandType.BOTTOM_ANGLE) return firstOperand.value
-        if (secondOperand.type == OperandType.BOTTOM_ANGLE) return secondOperand.value
+    private fun riseFrom(run: Operand.Run, diagonal: Operand.Diagonal, displayUnits: LengthUnitType?): Length? {
+        val runValue = run.handle.value?.baseUnitDecimalValue ?: return null
+        val diagonalValue = diagonal.handle.value?.baseUnitDecimalValue ?: return null
+        val squaredRise = (diagonalValue * diagonalValue - runValue * runValue).toDouble()
+        return if (squaredRise >= 0) Length(Deci(sqrt(squaredRise)), displayUnits) else null
     }
 
-    constructor (givenRise: Rise, givenRun: Run, lengthUnitTypeWanted: LengthType?) {
+    fun getRun(firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?): Length? =
+        when {
+            firstOperand is Operand.Run -> firstOperand.handle.value
+            secondOperand is Operand.Run -> secondOperand.handle.value
+            else -> null
+        }
+
+    fun getDiagonal(firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?): Length? =
+        when {
+            firstOperand is Operand.Diagonal -> firstOperand.handle.value
+            secondOperand is Operand.Diagonal -> secondOperand.handle.value
+            else -> null
+        }
+
+    fun getTopAngle(firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?): Angle? =
+        when {
+            firstOperand is Operand.TopAngle -> firstOperand.handle.value
+            secondOperand is Operand.TopAngle -> secondOperand.handle.value
+            else -> null
+        }
+
+    fun getBottomAngle(firstOperand: Operand, secondOperand: Operand, lengthUnitTypeWanted: LengthUnitType?): Angle? =
+        when {
+            firstOperand is Operand.BottomAngle -> firstOperand.handle.value
+            secondOperand is Operand.BottomAngle -> secondOperand.handle.value
+            else -> null
+        }
+
+    constructor (givenRise: Rise, givenRun: Run, lengthUnitTypeWanted: LengthType?) : this(
+        Operand.Rise(ItemHandle(givenRise.length)),
+        Operand.Run(ItemHandle(givenRun.length)),
+    ) {
         this.calculation = calculate(
             givenRise = givenRise,
             givenRun = givenRun,
@@ -119,7 +126,10 @@ class RightTriangle {
         )
     }
 
-    constructor (givenRise: Rise, givenDiagonal: Diagonal, lengthUnitTypeWanted: LengthType?) {
+    constructor (givenRise: Rise, givenDiagonal: Diagonal, lengthUnitTypeWanted: LengthType?) : this(
+        Operand.Rise(ItemHandle(givenRise.length)),
+        Operand.Diagonal(ItemHandle(givenDiagonal.length)),
+    ) {
         this.calculation = calculate(
             givenRise = givenRise,
             givenDiagonal = givenDiagonal,
@@ -154,7 +164,10 @@ class RightTriangle {
         )
     }
 
-    constructor (givenRun: Run, givenDiagonal: Diagonal, lengthUnitTypeWanted: LengthType?) {
+    constructor (givenRun: Run, givenDiagonal: Diagonal, lengthUnitTypeWanted: LengthType?) : this(
+        Operand.Run(ItemHandle(givenRun.length)),
+        Operand.Diagonal(ItemHandle(givenDiagonal.length)),
+    ) {
         this.calculation = calculate(
             givenRun = givenRun,
             givenDiagonal = givenDiagonal,
@@ -190,7 +203,10 @@ class RightTriangle {
         )
     }
 
-    constructor (givenRise: Rise, givenAngle: Angle, lengthUnitTypeWanted: LengthType?) {
+    constructor (givenRise: Rise, givenAngle: Angle, lengthUnitTypeWanted: LengthType?) : this(
+        Operand.Rise(ItemHandle(givenRise.length)),
+        Operand.BottomAngle(ItemHandle(givenAngle)),
+    ) {
         this.calculation = calculate(
             givenRise = givenRise,
             givenAngle = givenAngle,
@@ -230,7 +246,10 @@ class RightTriangle {
         )
     }
 
-    constructor (givenRun: Run, givenAngle: Angle, lengthUnitTypeWanted: LengthType?) {
+    constructor (givenRun: Run, givenAngle: Angle, lengthUnitTypeWanted: LengthType?) : this(
+        Operand.Run(ItemHandle(givenRun.length)),
+        Operand.BottomAngle(ItemHandle(givenAngle)),
+    ) {
         this.calculation = calculate(
             givenRun = givenRun,
             givenAngle = givenAngle,
@@ -270,7 +289,10 @@ class RightTriangle {
         )
     }
 
-    constructor (givenDiagonal: Diagonal, givenAngle: Angle, lengthUnitTypeWanted: LengthType?) {
+    constructor (givenDiagonal: Diagonal, givenAngle: Angle, lengthUnitTypeWanted: LengthType?) : this(
+        Operand.Diagonal(ItemHandle(givenDiagonal.length)),
+        Operand.BottomAngle(ItemHandle(givenAngle)),
+    ) {
         this.calculation = calculate(
             givenDiagonal = givenDiagonal,
             givenAngle = givenAngle,

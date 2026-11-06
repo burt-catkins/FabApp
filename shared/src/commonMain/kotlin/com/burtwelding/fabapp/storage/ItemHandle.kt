@@ -1,25 +1,39 @@
 package com.burtwelding.fabapp.storage
 
 import com.burtwelding.fabapp.Item
+import kotlin.reflect.KClass
+import kotlin.reflect.safeCast
 import kotlin.uuid.Uuid
 
-class ItemHandle private constructor(
-    private var source: Source
+class ItemHandle<T : Item> private constructor(
+    private var source: Source<T>,
+    private val type: KClass<T>
 ) {
-    private sealed interface Source {
-        data class Direct(val item: Item) : Source
-        data class Saved(val key: Uuid) : Source
+    private sealed interface Source<out T : Item> {
+        data class Direct<T : Item>(val item: T) : Source<T>
+        data class Saved(val key: Uuid) : Source<Nothing>
     }
 
     companion object {
-        fun direct(item: Item) = ItemHandle(Source.Direct(item))
-        fun saved(key: Uuid) = ItemHandle(Source.Saved(key))
+        inline operator fun <reified T : Item> invoke(item: T): ItemHandle<T> = direct(item)
+
+        inline operator fun <reified T : Item> invoke(key: Uuid): ItemHandle<T> = saved(key)
+
+        inline fun <reified T : Item> direct(item: T): ItemHandle<T> = direct(item, T::class)
+
+        inline fun <reified T : Item> saved(key: Uuid): ItemHandle<T> = saved(key, T::class)
+
+        @PublishedApi
+        internal fun <T : Item> direct(item: T, type: KClass<T>): ItemHandle<T> = ItemHandle(Source.Direct(item), type)
+
+        @PublishedApi
+        internal fun <T : Item> saved(key: Uuid, type: KClass<T>): ItemHandle<T> = ItemHandle(Source.Saved(key), type)
     }
 
-    val value: Item?
+    val value: T?
         get() = when (val s = source) {
             is Source.Direct -> s.item
-            is Source.Saved -> TempItemMap.items[s.key]
+            is Source.Saved -> type.safeCast(TempItemMap.items[s.key])
         }
 
     fun save(key: Uuid) {
@@ -36,4 +50,6 @@ class ItemHandle private constructor(
             is Source.Saved -> { require(s.key == key) { "Item already references another key" } }
         }
     }
+
+    fun save() = save(Uuid.random())
 }

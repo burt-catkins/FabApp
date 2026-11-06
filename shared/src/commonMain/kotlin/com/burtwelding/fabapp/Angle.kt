@@ -7,4 +7,4 @@ data class Angle (
     override var displayUnits: AngleUnitType?,
     override var displayName: String?,
     override var variableName: String?
-): Number<AngleUnitType>
+): Number<AngleUnitType>()

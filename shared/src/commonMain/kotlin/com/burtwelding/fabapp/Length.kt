@@ -4,10 +4,8 @@ import org.kimplify.deci.Deci
 
 data class Length (
     override var baseUnitDecimalValue: Deci,
-    override var displayUnits: LengthUnitType? = null,
-    override var displayName: String? = null,
-    override var variableName: String? = null
-): Number<LengthUnitType> {
+    override var displayUnits: LengthUnitType? = null
+): Number<LengthUnitType>() {
     override fun toString(): String {
         return when (displayUnits) {
             Imperial.INCH -> "$baseUnitDecimalValue\""

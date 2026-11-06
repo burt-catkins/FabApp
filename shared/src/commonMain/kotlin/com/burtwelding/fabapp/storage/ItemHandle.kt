@@ -30,10 +30,10 @@ class ItemHandle<T : Item> private constructor(
         internal fun <T : Item> saved(key: Uuid, type: KClass<T>): ItemHandle<T> = ItemHandle(Source.Saved(key), type)
     }
 
-    val value: T?
+    val item: T
         get() = when (val s = source) {
             is Source.Direct -> s.item
-            is Source.Saved -> type.safeCast(TempItemMap.items[s.key])
+            is Source.Saved -> type.safeCast(TempItemMap.items[s.key])?: throw NullPointerException("Item no longer saved!")
         }
 
     fun save(key: Uuid) {

@@ -20,6 +20,14 @@ class RightTriangle (val operand1: Operand,
         data class BottomAngle (val handle: ItemHandle<Angle>): Operand
     }
 
+    data class Calculation (
+        val rise: Length,
+        val run: Length,
+        val diagonal: Length,
+        val topAngle: Angle,
+        val bottomAngle: Angle
+    )
+
     init {
         require(operand1::class != operand2::class) { "Both operands are the same type! THE FUHHHHH" }
         if (operand1::class == Operand.TopAngle::class && operand2::class == Operand.BottomAngle::class)
@@ -29,12 +37,12 @@ class RightTriangle (val operand1: Operand,
     }
 
     fun calculate () =
-        mapOf(
-            Operand.Rise::class to getRise(),
-            Operand.Run::class to getRun(),
-            Operand.Diagonal::class to getDiagonal(),
-            Operand.TopAngle::class to getTopAngle(),
-            Operand.BottomAngle::class to getBottomAngle()
+        Calculation(
+            rise = getRise(),
+            run = getRun(),
+            diagonal = getDiagonal(),
+            topAngle = getTopAngle(),
+            bottomAngle = getBottomAngle()
         )
 
     private fun getRise (): Length {

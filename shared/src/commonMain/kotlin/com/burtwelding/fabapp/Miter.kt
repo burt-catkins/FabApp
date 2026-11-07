@@ -22,10 +22,14 @@ class Miter (val leftPieceSize: ItemHandle<Length>,
         OUTSIDE
     }
     data class MiterCalculation (
-        val miterAngle: Angle,
-        val miterAngleSide: MiterAngleSide
+        val leftMiterAngle: Angle,
+        val leftMiterRise: Length,
+        val leftMiterSide: MiterAngleSide,
+        val rightMiterAngle: Angle,
+        val rightMiterRise: Length,
+        val rightMiterSide: MiterAngleSide
     )
-    fun calculate (): Map<PieceSide, MiterCalculation> {
+    fun calculate (): MiterCalculation {
         val biggerPiece = if (leftPieceSize.item.baseUnitDecimalValue > rightPieceSize.item.baseUnitDecimalValue) PieceSide.LEFT else PieceSide.RIGHT
         val biggerPieceSize = if (biggerPiece == PieceSide.LEFT) leftPieceSize.item.baseUnitDecimalValue else rightPieceSize.item.baseUnitDecimalValue
         val smallerPiece = if (biggerPiece == PieceSide.LEFT) PieceSide.RIGHT else PieceSide.LEFT
@@ -35,24 +39,73 @@ class Miter (val leftPieceSize: ItemHandle<Length>,
         val biggerPieceMiterAngle: Angle
         val edgeCase = leftPieceSize.item.baseUnitDecimalValue != rightPieceSize.item.baseUnitDecimalValue && smallerPieceAngleTest.plus(convertDegreesToRadians(totalJointAngle.item.baseUnitDecimalValue)) > DeciConstants.PI
         if (edgeCase) {
-            biggerPieceMiterAngle = Angle(convertRadiansToDegrees(Deci(atan((Deci.ONE.div(Deci(tan(DeciConstants.PI.minus(totalJointAngle.item.baseUnitDecimalValue).toDouble())))).minus(smallerPieceSize.div(biggerPieceSize).times(Deci.ONE.div(Deci(sin(DeciConstants.PI.minus(totalJointAngle.item.baseUnitDecimalValue).toDouble()))))).toDouble()))))
-            smallerPieceMiterAngle = Angle(DeciConstants.PI.plus(convertDegreesToRadians(totalJointAngle.item.baseUnitDecimalValue)).plus(biggerPieceMiterAngle.baseUnitDecimalValue))
-        } else {
-            biggerPieceMiterAngle = Angle(convertRadiansToDegrees(Deci(atan((Deci.ONE.div(Deci(tan(totalJointAngle.item.baseUnitDecimalValue.minus(DeciConstants.PI).toDouble())))).minus(biggerPieceSize.div(smallerPieceSize).times(Deci.ONE.div(Deci(sin(totalJointAngle.item.baseUnitDecimalValue.minus(DeciConstants.PI).toDouble()))))).toDouble()))))
-            smallerPieceMiterAngle = Angle(DeciConstants.PI.minus(convertDegreesToRadians(totalJointAngle.item.baseUnitDecimalValue)).plus(biggerPieceMiterAngle.baseUnitDecimalValue))
-        }
-        fun getMapValue (pieceSide: PieceSide) =
-            if (biggerPiece == pieceSide)
-                MiterCalculation(
-                    miterAngle = biggerPieceMiterAngle,
-                    miterAngleSide =
-                        if (edgeCase) MiterAngleSide.OUTSIDE
-                        else MiterAngleSide.INSIDE
+            biggerPieceMiterAngle = Angle(convertRadiansToDegrees(Deci(
+                atan(
+                    (
+                            cos(
+                                DeciConstants.PI
+                                    .minus(convertDegreesToRadians(totalJointAngle.item.baseUnitDecimalValue)).toDouble()
+                            ).minus(
+                                smallerPieceSize.div(
+                                    biggerPieceSize
+                                ).toDouble()
+                            )
+                            ).div(
+                            sin(
+                                DeciConstants.PI
+                                    .minus(convertDegreesToRadians(totalJointAngle.item.baseUnitDecimalValue)).toDouble()
+                            )
+                        )
                 )
-            else MiterCalculation(smallerPieceMiterAngle, MiterAngleSide.INSIDE)
-        return mapOf(
-            PieceSide.LEFT to getMapValue(PieceSide.LEFT),
-            PieceSide.RIGHT to getMapValue(PieceSide.RIGHT)
+            )))
+            smallerPieceMiterAngle = Angle(
+                convertRadiansToDegrees(DeciConstants.PI)
+                    .minus(totalJointAngle.item.baseUnitDecimalValue)
+                    .plus(biggerPieceMiterAngle.baseUnitDecimalValue)
+            )
+        } else {
+            biggerPieceMiterAngle = Angle(convertRadiansToDegrees(Deci(
+                atan(
+                        (
+                            cos(
+                                convertDegreesToRadians(totalJointAngle.item.baseUnitDecimalValue)
+                                    .minus(DeciConstants.PI).toDouble()
+                            ).minus(
+                                smallerPieceSize.div(
+                                    biggerPieceSize
+                                ).toDouble()
+                            )
+                        ).div(
+                            sin(
+                                convertDegreesToRadians(totalJointAngle.item.baseUnitDecimalValue)
+                                    .minus(DeciConstants.PI).toDouble()
+                            )
+                        )
+                )
+            )))
+            smallerPieceMiterAngle = Angle(
+                convertRadiansToDegrees(DeciConstants.PI)
+                    .minus(totalJointAngle.item.baseUnitDecimalValue)
+                    .minus(biggerPieceMiterAngle.baseUnitDecimalValue)
+            )
+        }
+        val smallerPieceMiterRise = Length(Deci(
+            tan(
+                convertDegreesToRadians(smallerPieceMiterAngle.baseUnitDecimalValue).toDouble()
+            ).times(smallerPieceSize.toDouble())
+        ))
+        val biggerPieceMiterRise = Length(Deci(
+            tan(
+                convertDegreesToRadians(biggerPieceMiterAngle.baseUnitDecimalValue).toDouble()
+            ).times(biggerPieceSize.toDouble()))
+        )
+        return MiterCalculation(
+            leftMiterAngle = if (biggerPiece == PieceSide.LEFT) biggerPieceMiterAngle else smallerPieceMiterAngle,
+            leftMiterRise = if (biggerPiece == PieceSide.LEFT) biggerPieceMiterRise else smallerPieceMiterRise,
+            leftMiterSide = if (biggerPiece == PieceSide.LEFT && edgeCase) MiterAngleSide.OUTSIDE else MiterAngleSide.INSIDE,
+            rightMiterAngle = if (biggerPiece == PieceSide.RIGHT) biggerPieceMiterAngle else smallerPieceMiterAngle,
+            rightMiterRise = if (biggerPiece == PieceSide.RIGHT) biggerPieceMiterRise else smallerPieceMiterRise,
+            rightMiterSide = if (biggerPiece == PieceSide.RIGHT && edgeCase) MiterAngleSide.OUTSIDE else MiterAngleSide.INSIDE
         )
     }
 }

@@ -1,8 +1,7 @@
-package com.burtwelding.fabapp
+package deci
 
 import org.kimplify.deci.Deci
 import org.kimplify.deci.RoundingMode
-import org.kimplify.deci.formatting.format
 
 fun Deci.trim(decimalPlaces: Int): String {
     require(decimalPlaces >= 0)

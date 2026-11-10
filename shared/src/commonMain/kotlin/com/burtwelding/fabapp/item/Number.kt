@@ -1,5 +1,6 @@
-package com.burtwelding.fabapp
+package com.burtwelding.fabapp.item
 
+import com.burtwelding.fabapp.UnitType
 import org.kimplify.deci.Deci
 
 abstract class Number <U: UnitType>: Item() {

@@ -1,5 +1,8 @@
-package com.burtwelding.fabapp
+package com.burtwelding.fabapp.item
 
+import com.burtwelding.fabapp.Imperial
+import com.burtwelding.fabapp.LengthUnitType
+import com.burtwelding.fabapp.Metric
 import org.kimplify.deci.Deci
 
 data class Length (

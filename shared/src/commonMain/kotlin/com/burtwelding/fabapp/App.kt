@@ -1,131 +1,676 @@
 package com.burtwelding.fabapp
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.burtwelding.fabapp.storage.ItemHandle
-
-
-import fabapp.shared.generated.resources.Res
-import fabapp.shared.generated.resources.compose_multiplatform
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntSize
+import com.burtwelding.fabapp.item.Angle
+import com.burtwelding.fabapp.item.Length
+import com.burtwelding.fabapp.item.Miter
+import com.burtwelding.fabapp.ui.draw.MiterPaths
 import org.kimplify.deci.Deci
-import org.kimplify.deci.extension.toFloat
+import com.burtwelding.fabapp.storage.ItemHandle
+import com.burtwelding.fabapp.ui.draw.getMiterPaths
+import deci.trim
 
 @Composable
 @Preview
 fun App() {
 
-    Canvas(
-
-        modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)
-
-    ) {
-
-        val maxPieceSize = size.width * 0.35f
-
-        val leftPieceSize = ItemHandle<Length>(Length(Deci(1)))
-        val rightPieceSize = ItemHandle<Length>(Length(Deci(1)))
-        val totalJointAngle = ItemHandle<Angle>(Angle(Deci(135)))
-
-        val miter = Miter(
-            leftPieceSize = leftPieceSize,
-            rightPieceSize = rightPieceSize,
-            totalJointAngle = totalJointAngle
-        )
-
-        val miterCalculation = miter.calculate()
-        val leftMiterRise = miterCalculation.leftMiterRise.baseUnitDecimalValue
-        val rightMiterRise = miterCalculation.rightMiterRise
-        val leftMiterAngleIsOutside = miterCalculation.leftMiterSide == Miter.MiterAngleSide.OUTSIDE
-        val leftMiterAngle = miterCalculation.leftMiterAngle
-        val rightMiterAngle = miterCalculation.rightMiterAngle
-        val rightMiterAngleIsOutside = miterCalculation.rightMiterSide == Miter.MiterAngleSide.OUTSIDE
-        val leftPieceBoxSize =
-            if (leftPieceSize.item.baseUnitDecimalValue > rightPieceSize.item.baseUnitDecimalValue)
-                maxPieceSize
-            else
-                maxPieceSize * leftPieceSize.item.baseUnitDecimalValue.toFloat() / rightPieceSize.item.baseUnitDecimalValue.toFloat()
-        val rightPieceBoxSize =
-            if (rightPieceSize.item.baseUnitDecimalValue > leftPieceSize.item.baseUnitDecimalValue)
-                maxPieceSize
-            else
-                maxPieceSize * rightPieceSize.item.baseUnitDecimalValue.toFloat() / leftPieceSize.item.baseUnitDecimalValue.toFloat()
-        val leftMiterRiseUI = leftMiterRise.toFloat() / leftPieceSize.item.baseUnitDecimalValue.toFloat() * leftPieceBoxSize
-        val leftPieceVerticalOffset = if (leftMiterAngleIsOutside) leftMiterRiseUI else 0f
-        val leftPieceBox = Path().apply {
-            moveTo(size.width/2, size.height/2 + leftPieceVerticalOffset)
-            lineTo(size.width/2, size.height)
-            lineTo(size.width/2 - leftPieceBoxSize, size.height)
-            lineTo(size.width/2 - leftPieceBoxSize, size.height/2 + leftPieceVerticalOffset)
-            close()
-        }
-        val leftMiterRightTrianglePath = Path().apply {
-            moveTo(size.width/2, size.height/2 + leftPieceVerticalOffset)
-            lineTo(size.width/2 - leftPieceBoxSize, size.height/2 + leftPieceVerticalOffset)
-            lineTo(size.width/2 - if (leftMiterAngleIsOutside) 0f else leftPieceBoxSize, size.height/2 + leftPieceVerticalOffset - leftMiterRiseUI)
-            close()
-        }
-
-        drawPath(
-            path = leftPieceBox,
-            color = Color(
-                red = 1f,
-                green = 0f,
-                blue = 0f
-            )
-        )
-        drawPath(
-            path = leftMiterRightTrianglePath,
-            color = Color(
-                red = 1f,
-                green = 0.2f,
-                blue = 0.2f
-            )
-        )
-
+    var canvasSize by remember {
+        mutableStateOf(IntSize.Zero)
     }
+
+    var leftPieceSizeString by remember { mutableStateOf("") }
+    var rightPieceSizeString by remember { mutableStateOf("") }
+    var totalJointAngleString by remember { mutableStateOf("") }
+
+    var firstMiter by remember { mutableStateOf(true) }
+    var showMiterDialog by remember { mutableStateOf(true) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    var angleError by remember { mutableStateOf("") }
+    var leftPieceSizeError by remember { mutableStateOf("") }
+    var rightPieceSizeError by remember { mutableStateOf("") }
+    var angleValidated by remember { mutableStateOf(false) }
+    var leftPieceSizeValidated by remember { mutableStateOf(true) }
+    var rightPieceSizeValidated by remember { mutableStateOf(true) }
+
+    var miterCalculation by remember { mutableStateOf<Miter.MiterCalculation?>(null) }
+    var miterPaths by remember { mutableStateOf<MiterPaths?>(null) }
+
+    var leftMiterAngleString by remember { mutableStateOf("") }
+    var leftMiterRiseString by remember { mutableStateOf("") }
+    var leftMiterAngleSideString by remember { mutableStateOf("") }
+    var rightMiterAngleString by remember { mutableStateOf("") }
+    var rightMiterRiseString by remember { mutableStateOf("") }
+    var rightMiterAngleSideString by remember { mutableStateOf("") }
+
+    var inputFocus by remember { mutableStateOf<InputType?>(null) }
+
+    var numberTypeSelected by remember { mutableStateOf(NumberTypeSelected.FRACTION) }
+
+    var heightOfTopSection by remember { mutableStateOf(0f) }
+
+    val buttonColor by remember { mutableStateOf(ButtonColors(
+        containerColor = Color(0.2f, 0.5f, 0.2f),
+        contentColor = Color(0.1f, 0.1f, 0.1f),
+        disabledContainerColor = Color(0f, 0.1f, 0f),
+        disabledContentColor = Color(0.1f, 0f, 0f)
+    )) }
+
+    fun convertValues (calculation: Miter.MiterCalculation) {
+        when (numberTypeSelected) {
+            NumberTypeSelected.DECIMAL -> {
+                leftMiterRiseString = calculation.leftMiterRise.baseUnitDecimalValue.trim(3)
+                rightMiterRiseString = calculation.rightMiterRise.baseUnitDecimalValue.trim(3)
+            }
+            NumberTypeSelected.FRACTION -> {
+                val leftRise = Calculator.getFractionalInches(
+                    length = Length(Deci(leftMiterRiseString)),
+                    denominator = ImperialFraction.SIXTEENTHS
+                )
+                leftMiterRiseString = leftRise.toString()
+                val rightRise = Calculator.getFractionalInches(
+                    length = Length(Deci(rightMiterRiseString)),
+                    denominator = ImperialFraction.SIXTEENTHS
+                )
+                rightMiterRiseString = rightRise.toString()
+            }
+        }
+    }
+
+    @Composable
+    fun Tile(
+        modifier: Modifier = Modifier,
+        text: String,
+        pieceSide: Side?
+    ) {
+        Box(
+            modifier = modifier
+                .background(
+                    color = when (pieceSide) {
+                        Side.LEFT -> Color(red = 0.8f, green = 0.4f, blue = 0.4f)
+                        Side.RIGHT -> Color(red = 0.4f, green = 0.4f, blue = 0.8f)
+                        null -> Color(red = 0.6f, green = 0.3f, blue = 0.9f)
+                    },
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .border(
+                    width = 1.dp,
+                    color = Color.DarkGray,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .padding(4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+
+
+    @Composable
+    fun TileButton(
+        modifier: Modifier = Modifier,
+        text: String,
+        onClick: () -> Unit
+    ) {
+        Button(
+            onClick = onClick,
+            modifier = modifier,
+            shape = RoundedCornerShape(8.dp),
+            contentPadding = PaddingValues(4.dp),
+            colors = buttonColor
+        ) {
+            Text(
+                text = text,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+
+    @Composable
+    fun BottomTileLayout(
+        modifier: Modifier = Modifier
+    ) {
+        val spacing = 6.dp
+
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(spacing)
+        ) {
+
+            // First two rows, with a tall tile on the left
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(2f),
+                horizontalArrangement = Arrangement.spacedBy(spacing)
+            ) {
+
+                // Tall tile (spans two rows)
+                Tile(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    text = "Joint Angle:\n$totalJointAngleString°",
+                    pieceSide = null
+                )
+
+                // Middle and right columns
+                Column(
+                    modifier = Modifier.weight(2f),
+                    verticalArrangement = Arrangement.spacedBy(spacing)
+                ) {
+
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(spacing)
+                    ) {
+                        Tile(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            text = "Size:\n$leftPieceSizeString",
+                            pieceSide = Side.LEFT
+                        )
+
+                        Tile(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            text = "Size:\n$rightPieceSizeString",
+                            pieceSide = Side.RIGHT
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(spacing)
+                    ) {
+                        Tile(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            text = "Miter Angle:\n$leftMiterAngleString°",
+                            pieceSide = Side.LEFT
+                        )
+
+                        Tile(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            text = "Miter Angle:\n$rightMiterAngleString°",
+                            pieceSide = Side.RIGHT
+                        )
+                    }
+                }
+            }
+
+            // Third row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(spacing)
+            ) {
+                TileButton(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    text = "New",
+                    onClick = { showMiterDialog = true }
+                )
+                Tile(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    text = "Miter Rise:\n$leftMiterRiseString",
+                    pieceSide = Side.LEFT
+                )
+                Tile(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    text = "Miter Rise:\n$rightMiterRiseString",
+                    pieceSide = Side.RIGHT
+                )
+            }
+
+            // Fourth row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(spacing)
+            ) {
+                TileButton(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    text = numberTypeSelected.name.lowercase().replaceFirstChar { it.uppercase() },
+                    onClick = {
+                        numberTypeSelected = when (numberTypeSelected) {
+                            NumberTypeSelected.DECIMAL -> NumberTypeSelected.FRACTION
+                            NumberTypeSelected.FRACTION -> NumberTypeSelected.DECIMAL
+                        }
+                        convertValues(
+                            miterCalculation?: throw NullPointerException("why u tryna convert when u aint got a calc! bruh!")
+                        )
+                    }
+                )
+                Tile(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    text = "Angle Side:\n$leftMiterAngleSideString",
+                    pieceSide = Side.LEFT
+                )
+                Tile(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    text = "Angle Side:\n$rightMiterAngleSideString",
+                    pieceSide = Side.RIGHT
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun MainScreen() {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        ) {
+
+            // TOP SECTION - Scrollable
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(8.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .onGloballyPositioned {
+                        heightOfTopSection = it.boundsInRoot().height
+                    }
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(500.dp)
+                        .onSizeChanged{ newSize ->
+                            canvasSize = newSize
+                        }
+                ) {
+                    miterPaths?.let { paths ->
+                        drawPath(
+                            paths.leftMiterTrianglePath,
+                            Color(red = 1f, green = 0.2f, blue = 0.2f)
+                        )
+                        drawPath(
+                            paths.leftBoxPath,
+                            Color(red = 1f, green = 0f, blue = 0f)
+                        )
+                        drawPath(
+                            paths.rightMiterTrianglePath,
+                            Color(blue = 1f, green = 0.2f, red = 0.2f)
+                        )
+                        drawPath(
+                            paths.rightBoxPath,
+                            Color(blue = 1f, green = 0f, red = 0f)
+                        )
+                    }
+                }
+
+            }
+
+
+            // BOTTOM SECTION - Fixed height
+            BottomTileLayout(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(320.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+            )
+        }
+    }
+
+    fun createSetAndDrawMiter() {
+        leftPieceSizeString = if (leftPieceSizeString == "") "1" else leftPieceSizeString
+        rightPieceSizeString = if (rightPieceSizeString == "") "1" else rightPieceSizeString
+        val leftPieceSizeItem = ItemHandle<Length>(
+            Length(Deci(leftPieceSizeString))
+        )
+        val rightPieceSizeItem = ItemHandle<Length>(
+            Length(Deci(rightPieceSizeString))
+        )
+        val totalJointAngleItem = ItemHandle<Angle>(
+            Angle(Deci(totalJointAngleString))
+        )
+        val miter = Miter(
+            leftPieceSize = leftPieceSizeItem,
+            rightPieceSize = rightPieceSizeItem,
+            totalJointAngle = totalJointAngleItem
+        )
+        val nonNullCalculation = miter.calculate()
+        miterCalculation = nonNullCalculation
+        miterPaths = getMiterPaths(
+            leftPieceSizeItem = leftPieceSizeItem,
+            rightPieceSizeItem = rightPieceSizeItem,
+            totalJointAngleItem = totalJointAngleItem,
+            miterCalculation = miterCalculation
+                ?: throw IllegalArgumentException("u forgot to calculate!"),
+            windowWidth = Deci(canvasSize.width),
+            windowHeight = Deci(heightOfTopSection.toDouble())
+        )
+        leftMiterAngleString = nonNullCalculation.leftMiterAngle.baseUnitDecimalValue.trim(1)
+        leftMiterRiseString = nonNullCalculation.leftMiterRise.baseUnitDecimalValue.trim(3)
+        leftMiterAngleSideString = nonNullCalculation.leftMiterSide.name
+        rightMiterAngleString = nonNullCalculation.rightMiterAngle.baseUnitDecimalValue.trim(1)
+        rightMiterRiseString = nonNullCalculation.rightMiterRise.baseUnitDecimalValue.trim(3)
+        rightMiterAngleSideString = nonNullCalculation.rightMiterSide.name
+        convertValues(nonNullCalculation)
+    }
+
+    LaunchedEffect(canvasSize) {
+        if (miterCalculation != null)
+            createSetAndDrawMiter()
+    }
+
+    fun validateInput (inputType: InputType): Boolean {
+        if (inputType == InputType.LEFT_PIECE_SIZE && leftPieceSizeString == "" && rightPieceSizeString == "") {
+            leftPieceSizeValidated = true
+            return true
+        }
+        if (inputType == InputType.RIGHT_PIECE_SIZE && rightPieceSizeString == "" && leftPieceSizeString == "") {
+            rightPieceSizeValidated = true
+            return true
+        }
+        try {
+            val newValue = Deci(
+                when (inputType) {
+                    InputType.ANGLE -> totalJointAngleString
+                    InputType.LEFT_PIECE_SIZE -> leftPieceSizeString
+                    InputType.RIGHT_PIECE_SIZE -> rightPieceSizeString
+                }
+            )
+            val newValueIsValid = when (inputType) {
+                InputType.ANGLE -> newValue in Deci(0.01)..Deci(179.99)
+                InputType.LEFT_PIECE_SIZE, InputType.RIGHT_PIECE_SIZE -> {
+                    (leftPieceSizeString == "" && rightPieceSizeString == "")
+                            || newValue > Deci.ZERO
+                }
+            }
+            if (newValueIsValid) {
+                when (inputType) {
+                    InputType.ANGLE -> {
+                        totalJointAngleString = newValue.toString()
+                        angleValidated = true
+                        angleError = ""
+                    }
+                    InputType.LEFT_PIECE_SIZE -> {
+                        leftPieceSizeString = newValue.toString()
+                        leftPieceSizeValidated = true
+                        leftPieceSizeError = ""
+                    }
+                    InputType.RIGHT_PIECE_SIZE -> {
+                        rightPieceSizeString = newValue.toString()
+                        rightPieceSizeValidated = true
+                        rightPieceSizeError = ""
+                    }
+                }
+                keyboardController?.hide()
+                return true
+            } else {
+                when (inputType) {
+                    InputType.ANGLE -> {
+                        angleValidated = false
+                        angleError = "Enter an angle from 0.01 to 179.99"
+                    }
+                    InputType.LEFT_PIECE_SIZE -> {
+                        leftPieceSizeValidated = false
+                        leftPieceSizeError = "Value must be greater than 0"
+                    }
+                    InputType.RIGHT_PIECE_SIZE -> {
+                        rightPieceSizeValidated = false
+                        rightPieceSizeError = "Value must be greater than 0"
+                    }
+                }
+                return false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            when (inputType) {
+                InputType.ANGLE -> {
+                    angleValidated = false
+                    angleError = "Please enter a valid decimal number"
+                }
+                InputType.LEFT_PIECE_SIZE -> {
+                    leftPieceSizeValidated = false
+                    leftPieceSizeError = "Please enter a valid decimal number"
+                }
+                InputType.RIGHT_PIECE_SIZE -> {
+                    rightPieceSizeValidated = false
+                    rightPieceSizeError = "Please enter a valid decimal number"
+                }
+            }
+            return false
+        }
+    }
+
+    fun attemptInput () {
+        validateInput(InputType.ANGLE)
+        validateInput(InputType.LEFT_PIECE_SIZE)
+        validateInput(InputType.RIGHT_PIECE_SIZE)
+        if (angleValidated && leftPieceSizeValidated && rightPieceSizeValidated) {
+            if (firstMiter)
+                firstMiter = !firstMiter
+            createSetAndDrawMiter()
+            keyboardController?.hide()
+            showMiterDialog = false
+        }
+    }
+
+    if (showMiterDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                keyboardController?.hide()
+                if (!firstMiter)
+                    showMiterDialog = false
+            },
+            title = {
+                Text("Create Miter")
+            },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = totalJointAngleString,
+                        onValueChange = { newValue ->
+                            angleValidated = false
+                            totalJointAngleString = newValue
+                            angleError = ""
+                        },
+                        label = { Text("Total Joint Angle (Degrees)") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
+                            imeAction = ImeAction.Next,
+                            showKeyboardOnFocus = true
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = {
+                                if (validateInput(InputType.ANGLE))
+                                    focusManager.moveFocus(FocusDirection.Down)
+                            }
+                        ),
+                        modifier = Modifier
+                            .focusRequester(focusRequester)
+                            .onFocusChanged{ focus ->
+                                if (!focus.isFocused && inputFocus != null)
+                                    validateInput(InputType.ANGLE)
+                                else if (focus.isFocused)
+                                    inputFocus = InputType.ANGLE
+                            }
+                    )
+                    if (angleError.isNotEmpty()) {
+                        Text(
+                            text = angleError,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    OutlinedTextField(
+                        value = leftPieceSizeString,
+                        onValueChange = { newValue ->
+                            leftPieceSizeValidated = false
+                            leftPieceSizeString = newValue
+                            leftPieceSizeError = ""
+                        },
+                        label = { Text("Left Piece Size (Optional)") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
+                            imeAction = ImeAction.Next,
+                            showKeyboardOnFocus = true
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = {
+                                if (validateInput(InputType.LEFT_PIECE_SIZE))
+                                    focusManager.moveFocus(FocusDirection.Down)
+                            }
+                        ),
+                        modifier = Modifier
+                            .focusRequester(focusRequester)
+                            .onFocusChanged{ focus ->
+                                if (!focus.isFocused && inputFocus != null)
+                                    validateInput(InputType.LEFT_PIECE_SIZE)
+                                else if (focus.isFocused)
+                                    inputFocus = InputType.LEFT_PIECE_SIZE
+                            }
+                    )
+                    if (leftPieceSizeError.isNotEmpty()) {
+                        Text(
+                            text = leftPieceSizeError,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    OutlinedTextField(
+                        value = rightPieceSizeString,
+                        onValueChange = { newValue ->
+                            rightPieceSizeValidated = false
+                            rightPieceSizeString = newValue
+                            rightPieceSizeError = ""
+                        },
+                        label = { Text("Right Piece Size (Optional)") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
+                            imeAction = ImeAction.Done,
+                            showKeyboardOnFocus = true
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if (validateInput(InputType.RIGHT_PIECE_SIZE))
+                                    attemptInput()
+                            }
+                        ),
+                        modifier = Modifier
+                            .focusRequester(focusRequester)
+                            .onFocusChanged{ focus ->
+                                if (!focus.isFocused && inputFocus != null)
+                                    validateInput(InputType.RIGHT_PIECE_SIZE)
+                                else if (focus.isFocused)
+                                    inputFocus = InputType.RIGHT_PIECE_SIZE
+                            }
+                    )
+                    if (rightPieceSizeError.isNotEmpty()) {
+                        Text(
+                            text = rightPieceSizeError,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { attemptInput() }
+                ) {
+                    Text("Apply")
+                }
+            },
+            dismissButton = {
+                if (!firstMiter) {
+                    TextButton(
+                        onClick = {
+                            keyboardController?.hide()
+                            showMiterDialog = false
+                        }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            }
+        )
+
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
+    }
+    // If not null
+    miterCalculation?.let {
+        MainScreen()
+    }
+
+}
+
+
+
+
+//        Column(
+//            modifier = Modifier.fillMaxSize().padding(8.dp).zIndex(4f)
+//        ) {
+//            Spacer(modifier = Modifier.weight(1f))
+//            MiterInfo(
+//                jointAngle = totalJointAngleString,
+//                leftPieceSize = leftPieceSizeString,
+//                leftPieceMiterAngle = leftMiterAngleString,
+//                leftPieceRise = leftMiterRiseString,
+//                rightPieceSize = rightPieceSizeString,
+//                rightPieceMiterAngle = rightMiterAngleString,
+//                rightPieceRise = rightMiterRiseString,
+//                leftPieceMiterSide = leftMiterAngleSideString,
+//                rightPieceMiterSide = rightMiterAngleSideString
+//            )
+//        }
+
 
 //    @Composable
 //    fun Circle(angle: Float) {
@@ -393,4 +938,135 @@ fun App() {
 //            Circle(angle = 30f)
 //        }
 //    }
+
+
+
+//    @Composable
+//    fun MiterInfo(
+//        jointAngle: String,
+//        leftPieceSize: String,
+//        leftPieceMiterAngle: String,
+//        leftPieceRise: String,
+//        rightPieceSize: String,
+//        rightPieceMiterAngle: String,
+//        rightPieceRise: String,
+//        leftPieceMiterSide: String,
+//        rightPieceMiterSide: String
+//    ) {
+//        @Composable
+//        fun VariableTile(
+//            label: String,
+//            value: String,
+//            tileColor: Color,
+//            modifier: Modifier = Modifier
+//        ) {
+//            Box(
+//                modifier = modifier
+//                    .fillMaxWidth()
+//                    .height(60.dp)
+//                    .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
+//                    .background(tileColor)
+//                    .padding(8.dp),
+//                contentAlignment = Alignment.Center
+//            ) {
+//                Column(
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Text(
+//                        text = label,
+//                        fontSize = 10.sp,
+//                        color = Color(0.9f, 0.9f, 0.9f)
+//                    )
+//
+//                    Text(
+//                        text = value,
+//                        fontSize = 12.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        color = Color.Black
+//                    )
+//                }
+//            }
+//        }
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(8.dp)
+//                .zIndex(2f),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            Button(
+//                onClick = {
+//                    numberTypeSelected = when (numberTypeSelected) {
+//                        NumberTypeSelected.FRACTION -> NumberTypeSelected.DECIMAL
+//                        NumberTypeSelected.DECIMAL -> NumberTypeSelected.FRACTION
+//                    }
+//                    convertValues(miterCalculation?: throw NullPointerException("bruh where da calc at"))
+//                },
+//                shape = ButtonDefaults.shape,
+//            ) { Text(numberTypeSelected.name.lowercase().replaceFirstChar{it.uppercase()}) }
+//            // Left column - one large tile
+//            Column(
+//                modifier = Modifier.weight(2f),
+//            ) {
+//                VariableTile(
+//                    label = "Joint Angle",
+//                    value = "$jointAngle°",
+//                    tileColor = Color(red = 0.3f, green = 0.1f, blue = 0.5f),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(200.dp)
+//                )
+//            }
+//
+//            Row (
+//
+//            ) {
+//                val redTileColor = Color(red = 0.5f, green = 0.2f, blue = 0.2f)
+//                // Middle column - three tiles
+//                Column(
+//                    modifier = Modifier.weight(1f),
+//                    verticalArrangement = Arrangement.spacedBy(8.dp)
+//                ) {
+//                    VariableTile("Size", leftPieceSize, redTileColor)
+//                    VariableTile("Miter Angle", "${leftPieceMiterAngle}°", redTileColor)
+//                    VariableTile("Rise", leftPieceRise, redTileColor)
+//                    VariableTile("Angle Side", leftPieceMiterSide, redTileColor)
+//                }
+//
+//                val blueTileColor = Color(red = 0.2f, green = 0.2f, blue = 0.5f)
+//                // Right column - three tiles
+//                Column(
+//                    modifier = Modifier.weight(1f),
+//                    verticalArrangement = Arrangement.spacedBy(8.dp)
+//                ) {
+//                    VariableTile("Size", rightPieceSize, blueTileColor)
+//                    VariableTile("Miter Angle", "${rightPieceMiterAngle}°", blueTileColor)
+//                    VariableTile("Rise", rightPieceRise, blueTileColor)
+//                    VariableTile("Angle Side", rightPieceMiterSide, blueTileColor)
+//                }
+//                Button(
+//                    onClick = {
+//                        showMiterDialog = true
+//                    },
+//                    shape = ButtonDefaults.shape,
+//                ) { Text("New") }
+//            }
+//        }
+//    }
+
+
+enum class Side {
+    LEFT,
+    RIGHT
+}
+
+enum class InputType {
+    ANGLE,
+    LEFT_PIECE_SIZE,
+    RIGHT_PIECE_SIZE
+}
+
+enum class NumberTypeSelected {
+    DECIMAL,
+    FRACTION
 }

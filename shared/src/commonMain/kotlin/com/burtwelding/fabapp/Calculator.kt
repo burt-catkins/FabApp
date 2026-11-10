@@ -1,5 +1,8 @@
 package com.burtwelding.fabapp
 
+import com.burtwelding.fabapp.item.Item
+import com.burtwelding.fabapp.item.Length
+import com.burtwelding.fabapp.item.Number
 import org.kimplify.deci.Deci
 import org.kimplify.deci.DeciConstants
 import org.kimplify.deci.RoundingMode
@@ -18,11 +21,13 @@ object Calculator {
     fun convertInchesToMetric (inchesDecimal: Deci, metricLengthTypeDesired: Metric): Length =
         Length(
             displayUnits = metricLengthTypeDesired,
-            baseUnitDecimalValue = inchesDecimal.times(when (metricLengthTypeDesired) {
-                Metric.MILLIMETERS -> Deci("25.4")
-                Metric.CENTIMETERS -> Deci("2.54")
-                Metric.METERS -> Deci("0.0254")
-            })
+            baseUnitDecimalValue = inchesDecimal.times(
+                when (metricLengthTypeDesired) {
+                    Metric.MILLIMETERS -> Deci("25.4")
+                    Metric.CENTIMETERS -> Deci("2.54")
+                    Metric.METERS -> Deci("0.0254")
+                }
+            )
         )
     fun convertMetricToInches (metricDecimal: Length): Length =
         Length(
@@ -59,7 +64,7 @@ object Calculator {
         val roundedNumeratorPotentiallyWrapped = if (roundedNumeratorRoundedToWholeNumber) Deci.ZERO else roundedNumerator
         return ImperialFractionalResult(
             inches = wholeInches + if (roundedNumeratorRoundedToWholeNumber) Deci.ONE else Deci.ZERO,
-            fraction = Fraction(
+            fraction = if (roundedNumeratorPotentiallyWrapped == Deci.ZERO) null else Fraction(
                 originalNumerator = roundedNumeratorPotentiallyWrapped,
                 originalDenominator = denominator.denominator
             ),

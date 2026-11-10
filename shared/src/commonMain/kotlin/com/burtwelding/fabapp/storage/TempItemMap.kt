@@ -1,6 +1,6 @@
 package com.burtwelding.fabapp.storage
 
-import com.burtwelding.fabapp.Item
+import com.burtwelding.fabapp.item.Item
 import kotlin.uuid.Uuid
 
 object TempItemMap {

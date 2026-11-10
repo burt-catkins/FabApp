@@ -1,5 +1,6 @@
 package com.burtwelding.fabapp
 
+import deci.trim
 import org.kimplify.deci.Deci
 import org.kimplify.deci.RoundingMode
 
@@ -20,5 +21,5 @@ data class Fraction (val originalNumerator: Deci, val originalDenominator: Deci)
         numerator = sign * originalNumerator.abs() / gcd
         denominator = originalDenominator.abs() / gcd
     }
-    override fun toString(): String = if (denominator == Deci.ONE) numerator.trim(3) else "${numerator.trim(3)}/${denominator.trim(3)}"
+    override fun toString() = if (numerator == Deci.ZERO) "" else "${numerator.trim(3)}/${denominator.trim(3)}"
 }

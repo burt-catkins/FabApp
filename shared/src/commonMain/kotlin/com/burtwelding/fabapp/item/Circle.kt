@@ -1,4 +1,4 @@
-package com.burtwelding.fabapp
+package com.burtwelding.fabapp.item
 
 import com.burtwelding.fabapp.storage.ItemHandle
 import org.kimplify.deci.Deci

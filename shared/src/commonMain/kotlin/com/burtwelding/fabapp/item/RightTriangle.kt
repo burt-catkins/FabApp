@@ -1,7 +1,8 @@
-package com.burtwelding.fabapp
+package com.burtwelding.fabapp.item
 
 import com.burtwelding.fabapp.Calculator.convertDegreesToRadians
 import com.burtwelding.fabapp.Calculator.convertRadiansToDegrees
+import com.burtwelding.fabapp.Vector
 import com.burtwelding.fabapp.storage.ItemHandle
 import org.kimplify.deci.Deci
 import kotlin.math.cos
@@ -44,6 +45,19 @@ class RightTriangle (val operand1: Operand,
             topAngle = getTopAngle(),
             bottomAngle = getBottomAngle()
         )
+
+    fun drawFromTopCorner (rightTriangleCalculation: Calculation) =
+        listOf(
+            Vector(0.0, rightTriangleCalculation.rise.baseUnitDecimalValue.toDouble()),
+            Vector(rightTriangleCalculation.run.baseUnitDecimalValue.toDouble(), 0.0)
+        )
+    fun drawFromTopCorner () = drawFromTopCorner(this.calculate())
+    fun drawFromBottomCorner (rightTriangleCalculation: Calculation) =
+        listOf(
+            Vector(-rightTriangleCalculation.run.baseUnitDecimalValue.toDouble(), 0.0),
+            Vector(0.0, -rightTriangleCalculation.rise.baseUnitDecimalValue.toDouble())
+        )
+    fun drawFromBottomCorner () = drawFromBottomCorner(this.calculate())
 
     private fun getRise (): Length {
         if (operand1 is Operand.Rise) return operand1.handle.item
@@ -186,45 +200,163 @@ class RightTriangle (val operand1: Operand,
         }
     }
 
-    private fun getBottomAngle (topAngle: Operand.TopAngle) = Angle(Deci(90).minus(topAngle.handle.item.baseUnitDecimalValue))
+    private fun getBottomAngle (topAngle: Operand.TopAngle) =
+        Angle(Deci(90).minus(topAngle.handle.item.baseUnitDecimalValue))
     private fun getBottomAngle (rise: Operand.Rise, run: Operand.Run) =
-        Angle(convertRadiansToDegrees(Deci(tan(rise.handle.item.baseUnitDecimalValue.div(run.handle.item.baseUnitDecimalValue).toDouble()))))
+        Angle(
+            convertRadiansToDegrees(
+                Deci(
+                    tan(
+                        rise.handle.item.baseUnitDecimalValue.div(run.handle.item.baseUnitDecimalValue)
+                            .toDouble()
+                    )
+                )
+            )
+        )
     private fun getBottomAngle (rise: Operand.Rise, diagonal: Operand.Diagonal) =
-        Angle(convertRadiansToDegrees(Deci(sin(rise.handle.item.baseUnitDecimalValue.div(diagonal.handle.item.baseUnitDecimalValue).toDouble()))))
+        Angle(
+            convertRadiansToDegrees(
+                Deci(
+                    sin(
+                        rise.handle.item.baseUnitDecimalValue.div(diagonal.handle.item.baseUnitDecimalValue)
+                            .toDouble()
+                    )
+                )
+            )
+        )
     private fun getBottomAngle (run: Operand.Run, diagonal: Operand.Diagonal) =
-        Angle(convertRadiansToDegrees(Deci(cos(run.handle.item.baseUnitDecimalValue.div(diagonal.handle.item.baseUnitDecimalValue).toDouble()))))
-    private fun getTopAngle (rise: Operand.Rise, run: Operand.Run) = Angle(getBottomAngle(rise, run).baseUnitDecimalValue)
-    private fun getTopAngle (rise: Operand.Rise, diagonal: Operand.Diagonal) = Angle(getBottomAngle(rise, diagonal).baseUnitDecimalValue)
-    private fun getTopAngle (run: Operand.Run, diagonal: Operand.Diagonal) = Angle(getBottomAngle(run, diagonal).baseUnitDecimalValue)
-    private fun getTopAngle (bottomAngle: Operand.BottomAngle) = Angle(Deci(90).minus(bottomAngle.handle.item.baseUnitDecimalValue))
+        Angle(
+            convertRadiansToDegrees(
+                Deci(
+                    cos(
+                        run.handle.item.baseUnitDecimalValue.div(diagonal.handle.item.baseUnitDecimalValue)
+                            .toDouble()
+                    )
+                )
+            )
+        )
+    private fun getTopAngle (rise: Operand.Rise, run: Operand.Run) =
+        Angle(getBottomAngle(rise, run).baseUnitDecimalValue)
+    private fun getTopAngle (rise: Operand.Rise, diagonal: Operand.Diagonal) =
+        Angle(getBottomAngle(rise, diagonal).baseUnitDecimalValue)
+    private fun getTopAngle (run: Operand.Run, diagonal: Operand.Diagonal) =
+        Angle(getBottomAngle(run, diagonal).baseUnitDecimalValue)
+    private fun getTopAngle (bottomAngle: Operand.BottomAngle) =
+        Angle(Deci(90).minus(bottomAngle.handle.item.baseUnitDecimalValue))
     private fun getRise (run: Operand.Run, diagonal: Operand.Diagonal) =
-        Length(Deci(sqrt((diagonal.handle.item.baseUnitDecimalValue.times(diagonal.handle.item.baseUnitDecimalValue)).minus(run.handle.item.baseUnitDecimalValue.times(run.handle.item.baseUnitDecimalValue)).toDouble())))
+        Length(
+            Deci(
+                sqrt(
+                    (diagonal.handle.item.baseUnitDecimalValue.times(diagonal.handle.item.baseUnitDecimalValue)).minus(
+                        run.handle.item.baseUnitDecimalValue.times(run.handle.item.baseUnitDecimalValue)
+                    ).toDouble()
+                )
+            )
+        )
     private fun getRise (run: Operand.Run, angle: Operand.BottomAngle) =
-        Length(Deci(tan(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue).toDouble())).times(run.handle.item.baseUnitDecimalValue))
+        Length(
+            Deci(tan(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue).toDouble())).times(
+                run.handle.item.baseUnitDecimalValue
+            )
+        )
     private fun getRise (run: Operand.Run, angle: Operand.TopAngle) =
-        Length(Deci(tan(Deci(90).minus(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue)).toDouble())).times(run.handle.item.baseUnitDecimalValue))
+        Length(
+            Deci(
+                tan(
+                    Deci(90).minus(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue))
+                        .toDouble()
+                )
+            ).times(run.handle.item.baseUnitDecimalValue)
+        )
     private fun getRise (diagonal: Operand.Diagonal, angle: Operand.BottomAngle) =
-        Length(Deci(sin(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue).toDouble())).times(diagonal.handle.item.baseUnitDecimalValue))
+        Length(
+            Deci(sin(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue).toDouble())).times(
+                diagonal.handle.item.baseUnitDecimalValue
+            )
+        )
     private fun getRise (diagonal: Operand.Diagonal, angle: Operand.TopAngle) =
-        Length(Deci(sin(convertDegreesToRadians(Deci(90).minus(angle.handle.item.baseUnitDecimalValue)).toDouble())).times(diagonal.handle.item.baseUnitDecimalValue))
+        Length(
+            Deci(sin(convertDegreesToRadians(Deci(90).minus(angle.handle.item.baseUnitDecimalValue)).toDouble())).times(
+                diagonal.handle.item.baseUnitDecimalValue
+            )
+        )
     private fun getRun (rise: Operand.Rise, diagonal: Operand.Diagonal) =
-        Length(Deci(sqrt((rise.handle.item.baseUnitDecimalValue.times(rise.handle.item.baseUnitDecimalValue)).minus(diagonal.handle.item.baseUnitDecimalValue.times(diagonal.handle.item.baseUnitDecimalValue)).toDouble())))
+        Length(
+            Deci(
+                sqrt(
+                    (rise.handle.item.baseUnitDecimalValue.times(rise.handle.item.baseUnitDecimalValue)).minus(
+                        diagonal.handle.item.baseUnitDecimalValue.times(diagonal.handle.item.baseUnitDecimalValue)
+                    ).toDouble()
+                )
+            )
+        )
     private fun getRun (rise: Operand.Rise, angle: Operand.BottomAngle) =
         Length(rise.handle.item.baseUnitDecimalValue.div(Deci(tan(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue).toDouble()))))
     private fun getRun (rise: Operand.Rise, angle: Operand.TopAngle) =
-        Length(rise.handle.item.baseUnitDecimalValue.div(Deci(tan(convertDegreesToRadians(Deci(90).minus(angle.handle.item.baseUnitDecimalValue)).toDouble()))))
+        Length(
+            rise.handle.item.baseUnitDecimalValue.div(
+                Deci(
+                    tan(
+                        convertDegreesToRadians(
+                            Deci(90).minus(
+                                angle.handle.item.baseUnitDecimalValue
+                            )
+                        ).toDouble()
+                    )
+                )
+            )
+        )
     private fun getRun (diagonal: Operand.Diagonal, angle: Operand.BottomAngle) =
-        Length(Deci(cos(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue).toDouble())).times(diagonal.handle.item.baseUnitDecimalValue))
+        Length(
+            Deci(cos(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue).toDouble())).times(
+                diagonal.handle.item.baseUnitDecimalValue
+            )
+        )
     private fun getRun (diagonal: Operand.Diagonal, angle: Operand.TopAngle) =
-        Length(Deci(cos(Deci(90).minus(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue)).toDouble())).times(diagonal.handle.item.baseUnitDecimalValue))
+        Length(
+            Deci(
+                cos(
+                    Deci(90).minus(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue))
+                        .toDouble()
+                )
+            ).times(diagonal.handle.item.baseUnitDecimalValue)
+        )
     private fun getDiagonal (rise: Operand.Rise, run: Operand.Run) =
-        Length(Deci(sqrt((rise.handle.item.baseUnitDecimalValue.times(rise.handle.item.baseUnitDecimalValue)).plus(run.handle.item.baseUnitDecimalValue.times(run.handle.item.baseUnitDecimalValue)).toDouble())))
+        Length(
+            Deci(
+                sqrt(
+                    (rise.handle.item.baseUnitDecimalValue.times(rise.handle.item.baseUnitDecimalValue)).plus(
+                        run.handle.item.baseUnitDecimalValue.times(run.handle.item.baseUnitDecimalValue)
+                    ).toDouble()
+                )
+            )
+        )
     private fun getDiagonal (rise: Operand.Rise, angle: Operand.BottomAngle) =
         Length(rise.handle.item.baseUnitDecimalValue.div(Deci(sin(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue).toDouble()))))
     private fun getDiagonal (rise: Operand.Rise, angle: Operand.TopAngle) =
-        Length(rise.handle.item.baseUnitDecimalValue.div(Deci(sin(Deci(90).minus(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue)).toDouble()))))
+        Length(
+            rise.handle.item.baseUnitDecimalValue.div(
+                Deci(
+                    sin(
+                        Deci(90).minus(
+                            convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue)
+                        ).toDouble()
+                    )
+                )
+            )
+        )
     private fun getDiagonal (run: Operand.Run, angle: Operand.BottomAngle) =
         Length(run.handle.item.baseUnitDecimalValue.div(Deci(cos(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue).toDouble()))))
     private fun getDiagonal (run: Operand.Run, angle: Operand.TopAngle) =
-        Length(run.handle.item.baseUnitDecimalValue.div(Deci(cos(Deci(90).minus(convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue)).toDouble()))))
+        Length(
+            run.handle.item.baseUnitDecimalValue.div(
+                Deci(
+                    cos(
+                        Deci(90).minus(
+                            convertDegreesToRadians(angle.handle.item.baseUnitDecimalValue)
+                        ).toDouble()
+                    )
+                )
+            )
+        )
 }

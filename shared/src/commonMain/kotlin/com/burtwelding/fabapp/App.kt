@@ -29,14 +29,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -70,7 +68,6 @@ fun App() {
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
     var angleError by remember { mutableStateOf("") }
     var leftPieceSizeError by remember { mutableStateOf("") }
     var rightPieceSizeError by remember { mutableStateOf("") }
@@ -448,7 +445,6 @@ fun App() {
                         rightPieceSizeError = ""
                     }
                 }
-                keyboardController?.hide()
                 return true
             } else {
                 when (inputType) {
@@ -528,8 +524,9 @@ fun App() {
                         ),
                         keyboardActions = KeyboardActions(
                             onNext = {
-                                if (validateInput(InputType.ANGLE))
-                                    focusManager.moveFocus(FocusDirection.Down)
+                                if (validateInput(InputType.ANGLE)) {
+                                    defaultKeyboardAction(ImeAction.Next)
+                                }
                             }
                         ),
                         modifier = Modifier
@@ -563,12 +560,12 @@ fun App() {
                         ),
                         keyboardActions = KeyboardActions(
                             onNext = {
-                                if (validateInput(InputType.LEFT_PIECE_SIZE))
-                                    focusManager.moveFocus(FocusDirection.Down)
+                                if (validateInput(InputType.LEFT_PIECE_SIZE)) {
+                                    defaultKeyboardAction(ImeAction.Next)
+                                }
                             }
                         ),
                         modifier = Modifier
-                            .focusRequester(focusRequester)
                             .onFocusChanged{ focus ->
                                 if (!focus.isFocused && inputFocus != null)
                                     validateInput(InputType.LEFT_PIECE_SIZE)
@@ -603,7 +600,6 @@ fun App() {
                             }
                         ),
                         modifier = Modifier
-                            .focusRequester(focusRequester)
                             .onFocusChanged{ focus ->
                                 if (!focus.isFocused && inputFocus != null)
                                     validateInput(InputType.RIGHT_PIECE_SIZE)
@@ -617,6 +613,10 @@ fun App() {
                             color = MaterialTheme.colorScheme.error
                         )
                     }
+                }
+
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
                 }
             },
             confirmButton = {
@@ -639,10 +639,6 @@ fun App() {
                 }
             }
         )
-
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
-        }
     }
     // If not null
     miterCalculation?.let {

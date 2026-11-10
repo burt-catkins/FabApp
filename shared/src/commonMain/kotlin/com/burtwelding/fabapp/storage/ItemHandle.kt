@@ -1,7 +1,13 @@
 package com.burtwelding.fabapp.storage
 
 import com.burtwelding.fabapp.item.Item
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -9,13 +15,16 @@ import kotlinx.serialization.descriptors.capturedKClass
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.serializer
+import kotlin.concurrent.Volatile
 import kotlin.uuid.Uuid
 
 @Serializable(with = ItemHandle.Serializer::class)
 class ItemHandle<T : Item> private constructor(
-    private var source: Source<T>,
+    @Volatile private var source: Source<T>,
     private val serializer: KSerializer<T>
 ) {
+    private val saveMutex = Mutex()
+
     private sealed interface Source<out T : Item> {
         data class Direct<T : Item>(val item: T) : Source<T>
         data class Saved(val key: Uuid) : Source<Nothing>
@@ -58,18 +67,30 @@ class ItemHandle<T : Item> private constructor(
         throw error
     }
 
-    fun save(key: Uuid) {
-        when (val s = source) {
-            is Source.Direct -> {
-                Storage.value<Item>("items/$key").insertBlocking(s.item)
-                source = Source.Saved(key)
-            }
+    /** Saves the item and returns its UUID. An already saved handle keeps its key. */
+    suspend fun save(key: Uuid? = null): Uuid = withContext(Dispatchers.IO) {
+        saveMutex.withLock {
+            when (val s = source) {
+                is Source.Direct -> {
+                    val id = key ?: Uuid.random()
+                    // Publish the saved reference even if the caller cancels during the write.
+                    withContext(NonCancellable) {
+                        Storage.value<Item>("items/$id").insert(s.item)
+                        source = Source.Saved(id)
+                    }
+                    id
+                }
 
-            is Source.Saved -> { require(s.key == key) { "Item already references another key" } }
+                is Source.Saved -> {
+                    require(key == null || s.key == key) { "Item already references another key" }
+                    s.key
+                }
+            }
         }
     }
 
-    fun save() = save(savedKey ?: Uuid.random())
+    /** Synchronous save. Blocks the calling thread until the UUID is available. */
+    fun saveBlocking(key: Uuid? = null): Uuid = runBlocking { save(key) }
 
     @OptIn(ExperimentalSerializationApi::class)
     internal class Serializer<T : Item>(itemSerializer: KSerializer<T>) : KSerializer<ItemHandle<T>> {

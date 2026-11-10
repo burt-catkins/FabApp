@@ -144,15 +144,10 @@ class StoredValue<T : Any> internal constructor(
     fun updateBlocking(transform: (T) -> T): T = runBlocking { update(transform) }
     fun removeBlocking() = runBlocking { remove() }
 
-    internal fun insertBlocking(value: T) {
-        val payload = encode(value)
-        runBlocking {
-            Storage.access(changedKey = key) { database ->
-                database.transaction {
-                    require(database.read(key) == null) { "Key already belongs to another item" }
-                    database.write(key, serializer.descriptor.serialName, payload)
-                }
-            }
+    internal suspend fun insert(value: T) = Storage.access(changedKey = key) { database ->
+        database.transaction {
+            require(database.read(key) == null) { "Key already belongs to another item" }
+            database.write(key, serializer.descriptor.serialName, encode(value))
         }
     }
 

@@ -2,6 +2,11 @@ package com.burtwelding.fabapp.storage
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -17,6 +22,12 @@ object Storage {
     private val mutex = Mutex()
     private var database: SqliteStorage? = null
     private var databasePath: String? = null
+    private val observers = mutableMapOf<String, KeyObservers>()
+
+    private class KeyObservers {
+        val revision = MutableStateFlow(0L)
+        var count = 0
+    }
 
     internal val json = Json {
         encodeDefaults = true
@@ -48,7 +59,23 @@ object Storage {
     @PublishedApi
     internal inline fun <reified T : Any> serializerFor(): KSerializer<T> = storageSerializer(serializer<T>())
 
-    internal suspend fun <T> access(block: (SqliteStorage) -> T): T = withContext(Dispatchers.IO) {
+    @PublishedApi
+    internal fun changes(key: String): Flow<Long> = flow {
+        val entry = mutex.withLock {
+            observers.getOrPut(key) { KeyObservers() }.also { it.count++ }
+        }
+        try {
+            emitAll(entry.revision)
+        } finally {
+            withContext(NonCancellable) {
+                mutex.withLock {
+                    if (--entry.count == 0) observers.remove(key)
+                }
+            }
+        }
+    }
+
+    internal suspend fun <T> access(changedKey: String? = null, block: (SqliteStorage) -> T): T = withContext(Dispatchers.IO) {
         mutex.withLock {
             val current = database ?: run {
                 val location = checkNotNull(databasePath ?: defaultStorageDatabasePath()) {
@@ -59,7 +86,9 @@ object Storage {
                     databasePath = location
                 }
             }
-            block(current)
+            block(current).also {
+                observers[changedKey]?.revision?.let { revision -> revision.value++ }
+            }
         }
     }
 
@@ -91,12 +120,11 @@ class StoredValue<T : Any> internal constructor(
     suspend fun getOrNull(): T? = Storage.access { read(it) }
 
     suspend fun set(value: T) {
-        val payload = encode(value)
-        Storage.access { it.write(key, serializer.descriptor.serialName, payload) }
+        Storage.access(changedKey = key) { it.write(key, serializer.descriptor.serialName, encode(value)) }
     }
 
     /** The non-suspending transform must not call storage. A failure rolls back the entire update. */
-    suspend fun update(transform: (T) -> T): T = Storage.access { database ->
+    suspend fun update(transform: (T) -> T): T = Storage.access(changedKey = key) { database ->
         database.transaction {
             val current = read(database) ?: default ?: throw MissingStoredValueException(key)
             val replacement = transform(current)
@@ -106,7 +134,7 @@ class StoredValue<T : Any> internal constructor(
     }
 
     suspend fun remove() {
-        Storage.access { it.remove(key) }
+        Storage.access(changedKey = key) { it.remove(key) }
     }
 
     /** Blocking compatibility methods perform disk I/O; prefer suspend methods in UI code. */
@@ -119,7 +147,7 @@ class StoredValue<T : Any> internal constructor(
     internal fun insertBlocking(value: T) {
         val payload = encode(value)
         runBlocking {
-            Storage.access { database ->
+            Storage.access(changedKey = key) { database ->
                 database.transaction {
                     require(database.read(key) == null) { "Key already belongs to another item" }
                     database.write(key, serializer.descriptor.serialName, payload)

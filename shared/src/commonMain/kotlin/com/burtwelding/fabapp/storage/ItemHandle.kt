@@ -46,17 +46,20 @@ class ItemHandle<T : Item> private constructor(
         internal fun <T : Item> saved(key: Uuid, serializer: KSerializer<T>): ItemHandle<T> = ItemHandle(Source.Saved(key), serializer)
     }
 
-    /** Synchronous access; saved keys can block. Use resolve() from coroutines. */
+    /** Shorthand for [resolveBlocking]. */
     val item: T
-        get() = when (val s = source) {
-            is Source.Direct -> s.item
-            is Source.Saved -> runBlocking { load(s.key) }
-        }
+        get() = resolveBlocking()
 
     /** Loads saved references off the calling thread; direct handles need no storage setup. */
     suspend fun resolve(): T = when (val s = source) {
         is Source.Direct -> s.item
         is Source.Saved -> load(s.key)
+    }
+
+    /** Returns direct items immediately and blocks while loading saved items. */
+    fun resolveBlocking(): T = when (val s = source) {
+        is Source.Direct -> s.item
+        is Source.Saved -> runBlocking { load(s.key) }
     }
 
     internal val savedKey: Uuid? get() = (source as? Source.Saved)?.key

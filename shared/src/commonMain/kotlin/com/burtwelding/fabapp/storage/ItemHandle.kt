@@ -60,8 +60,12 @@ class ItemHandle<T : Item> private constructor(
     }
 
     internal val savedKey: Uuid? get() = (source as? Source.Saved)?.key
+
+    private fun storedItem(key: Uuid = checkNotNull(savedKey) { "Save the item first" }): StoredValue<T> =
+        Storage.value("items/$key", storageSerializer(serializer))
+
     private suspend fun load(key: Uuid): T = try {
-        Storage.value("items/$key", storageSerializer(serializer)).getOrNull() ?: throw NullPointerException("Item no longer saved!")
+        storedItem(key).getOrNull() ?: throw NullPointerException("Item no longer saved!")
     } catch (error: StoredValueSerializationException) {
         if (error.cause is ItemTypeMismatchException) throw NullPointerException("Item no longer saved!")
         throw error
@@ -75,7 +79,7 @@ class ItemHandle<T : Item> private constructor(
                     val id = key ?: Uuid.random()
                     // Publish the saved reference even if the caller cancels during the write.
                     withContext(NonCancellable) {
-                        Storage.value<Item>("items/$id").insert(s.item)
+                        storedItem(id).insert(s.item)
                         source = Source.Saved(id)
                     }
                     id
@@ -91,6 +95,15 @@ class ItemHandle<T : Item> private constructor(
 
     /** Synchronous save. Blocks the calling thread until the UUID is available. */
     fun saveBlocking(key: Uuid? = null): Uuid = runBlocking { save(key) }
+
+    /** Atomically edits a saved item. The transform must not call storage. */
+    suspend fun update(transform: (T) -> T): T = storedItem().update(transform)
+
+    /** Deletes the saved item. References keep their key and will fail to resolve. */
+    suspend fun remove() = storedItem().removeWithTypeCheck()
+
+    fun updateBlocking(transform: (T) -> T): T = runBlocking { update(transform) }
+    fun removeBlocking() = runBlocking { remove() }
 
     @OptIn(ExperimentalSerializationApi::class)
     internal class Serializer<T : Item>(itemSerializer: KSerializer<T>) : KSerializer<ItemHandle<T>> {

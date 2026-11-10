@@ -137,6 +137,15 @@ class StoredValue<T : Any> internal constructor(
         Storage.access(changedKey = key) { it.remove(key) }
     }
 
+    internal suspend fun removeWithTypeCheck() {
+        Storage.access(changedKey = key) { database ->
+            database.transaction {
+                read(database)
+                database.remove(key)
+            }
+        }
+    }
+
     /** Blocking compatibility methods perform disk I/O; prefer suspend methods in UI code. */
     fun getBlocking(): T = runBlocking { get() }
     fun getOrNullBlocking(): T? = runBlocking { getOrNull() }

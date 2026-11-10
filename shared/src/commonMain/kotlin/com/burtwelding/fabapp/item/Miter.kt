@@ -1,5 +1,7 @@
 package com.burtwelding.fabapp.item
 
+import kotlinx.serialization.Serializable
+
 import com.burtwelding.fabapp.Calculator.convertDegreesToRadians
 import com.burtwelding.fabapp.Calculator.convertRadiansToDegrees
 import com.burtwelding.fabapp.storage.ItemHandle
@@ -9,6 +11,7 @@ import deci.trig.sin
 import org.kimplify.deci.Deci
 import org.kimplify.deci.DeciConstants
 
+@Serializable
 class Miter (val leftPieceSize: ItemHandle<Length>,
              val rightPieceSize: ItemHandle<Length>,
              val totalJointAngle: ItemHandle<Angle>): Item() {

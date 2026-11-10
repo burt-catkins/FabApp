@@ -1,10 +1,13 @@
 package com.burtwelding.fabapp.item
 
+import kotlinx.serialization.Serializable
+
 import com.burtwelding.fabapp.Imperial
 import com.burtwelding.fabapp.LengthUnitType
 import com.burtwelding.fabapp.Metric
 import org.kimplify.deci.Deci
 
+@Serializable
 data class Length (
     override var baseUnitDecimalValue: Deci,
     override var displayUnits: LengthUnitType? = null

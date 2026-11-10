@@ -52,11 +52,11 @@ import org.kimplify.deci.Deci
 import com.burtwelding.fabapp.storage.ItemHandle
 import com.burtwelding.fabapp.ui.draw.getMiterPaths
 import deci.trim
+import kotlinx.serialization.Serializable
 
 @Composable
 @Preview
 fun App() {
-
     var canvasSize by remember {
         mutableStateOf(IntSize.Zero)
     }
@@ -1066,6 +1066,7 @@ enum class InputType {
     RIGHT_PIECE_SIZE
 }
 
+@Serializable
 enum class NumberTypeSelected {
     DECIMAL,
     FRACTION

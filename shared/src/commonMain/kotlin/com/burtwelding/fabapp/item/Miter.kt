@@ -38,11 +38,8 @@ class Miter (val leftPieceSize: ItemHandle<Length>,
         val smallerPieceSize = if (smallerPiece == PieceSide.LEFT) leftPieceSize.item.baseUnitDecimalValue else rightPieceSize.item.baseUnitDecimalValue
         val smallerPieceMiterAngle: Angle
         val biggerPieceMiterAngle: Angle
-        val smallPieceHypotheticalDiagonal =
-            if (totalJointAngle.item.baseUnitDecimalValue > Deci(90))
-                smallerPieceSize.div(cos(DeciConstants.PI.minus(convertDegreesToRadians(totalJointAngle.item.baseUnitDecimalValue))))
-            else Deci(180)
-        val flipBiggerPieceMiter = smallPieceHypotheticalDiagonal < biggerPieceSize
+        val smallPieceHypotheticalDiagonal = smallerPieceSize.div(cos(DeciConstants.PI.minus(convertDegreesToRadians(totalJointAngle.item.baseUnitDecimalValue))))
+        val flipBiggerPieceMiter = totalJointAngle.item.baseUnitDecimalValue > Deci(90) && smallPieceHypotheticalDiagonal < biggerPieceSize
         if (flipBiggerPieceMiter) {
             biggerPieceMiterAngle = Angle(
                 convertRadiansToDegrees(

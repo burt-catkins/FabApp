@@ -1,5 +1,7 @@
 package com.burtwelding.fabapp.item
 
+import kotlinx.serialization.Serializable
+
 import com.burtwelding.fabapp.Calculator.convertDegreesToRadians
 import com.burtwelding.fabapp.Calculator.convertRadiansToDegrees
 import com.burtwelding.fabapp.Vector
@@ -10,14 +12,21 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tan
 
+@Serializable
 class RightTriangle (val operand1: Operand,
                      val operand2: Operand): Item() {
 
+    @Serializable
     sealed interface Operand {
+        @Serializable
         data class Rise (val handle: ItemHandle<Length>): Operand
+        @Serializable
         data class Run (val handle: ItemHandle<Length>): Operand
+        @Serializable
         data class Diagonal (val handle: ItemHandle<Length>): Operand
+        @Serializable
         data class TopAngle (val handle: ItemHandle<Angle>): Operand
+        @Serializable
         data class BottomAngle (val handle: ItemHandle<Angle>): Operand
     }
 

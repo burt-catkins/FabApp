@@ -48,13 +48,14 @@ import com.burtwelding.fabapp.item.Miter
 import com.burtwelding.fabapp.ui.draw.MiterPaths
 import org.kimplify.deci.Deci
 import com.burtwelding.fabapp.storage.ItemHandle
+import com.burtwelding.fabapp.storage.rememberStorage
 import com.burtwelding.fabapp.ui.draw.getMiterPaths
 import deci.trim
+import kotlinx.serialization.Serializable
 
 @Composable
 @Preview
 fun App() {
-
     var canvasSize by remember {
         mutableStateOf(IntSize.Zero)
     }
@@ -87,7 +88,7 @@ fun App() {
 
     var inputFocus by remember { mutableStateOf<InputType?>(null) }
 
-    var numberTypeSelected by remember { mutableStateOf(NumberTypeSelected.FRACTION) }
+    var numberTypeSelected by rememberStorage("preferences/numberFormat", NumberTypeSelected.FRACTION)
 
     var heightOfTopSection by remember { mutableStateOf(0f) }
 
@@ -106,12 +107,12 @@ fun App() {
             }
             NumberTypeSelected.FRACTION -> {
                 val leftRise = Calculator.getFractionalInches(
-                    length = Length(Deci(leftMiterRiseString)),
+                    length = Length(Deci(calculation.leftMiterRise.baseUnitDecimalValue.trim(3))),
                     denominator = ImperialFraction.SIXTEENTHS
                 )
                 leftMiterRiseString = leftRise.toString()
                 val rightRise = Calculator.getFractionalInches(
-                    length = Length(Deci(rightMiterRiseString)),
+                    length = Length(Deci(calculation.rightMiterRise.baseUnitDecimalValue.trim(3))),
                     denominator = ImperialFraction.SIXTEENTHS
                 )
                 rightMiterRiseString = rightRise.toString()
@@ -280,9 +281,6 @@ fun App() {
                             NumberTypeSelected.DECIMAL -> NumberTypeSelected.FRACTION
                             NumberTypeSelected.FRACTION -> NumberTypeSelected.DECIMAL
                         }
-                        convertValues(
-                            miterCalculation?: throw NullPointerException("why u tryna convert when u aint got a calc! bruh!")
-                        )
                     }
                 )
                 Tile(
@@ -396,6 +394,10 @@ fun App() {
         rightMiterRiseString = nonNullCalculation.rightMiterRise.baseUnitDecimalValue.trim(3)
         rightMiterAngleSideString = nonNullCalculation.rightMiterSide.name
         convertValues(nonNullCalculation)
+    }
+
+    LaunchedEffect(numberTypeSelected) {
+        miterCalculation?.let(::convertValues)
     }
 
     LaunchedEffect(canvasSize) {
@@ -1062,6 +1064,7 @@ enum class InputType {
     RIGHT_PIECE_SIZE
 }
 
+@Serializable
 enum class NumberTypeSelected {
     DECIMAL,
     FRACTION

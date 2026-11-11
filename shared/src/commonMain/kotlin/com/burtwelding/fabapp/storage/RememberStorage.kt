@@ -23,20 +23,29 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlin.reflect.typeOf
 
+@PublishedApi
+@Composable
+internal expect fun configureStorageForComposition()
+
 /**
  * Shows [default] while loading. Assignments save asynchronously by default.
  * With [blocking], assignments wait for the save and update this binding before returning.
- * [onError] receives read and write failures. By default, failures are rethrown.
+ * [onError] receives read and write failures. By default, failures print a stack trace and are rethrown.
  */
 @Composable
 inline fun <reified T : Any> rememberStorage(
     key: String,
     default: T,
     blocking: Boolean = false,
-    noinline onError: (Exception) -> Unit = { throw it },
+    noinline onError: (Exception) -> Unit = { error ->
+        error.printStackTrace()
+        throw error
+    },
 ): MutableState<T> {
     val type = typeOf<T>()
     if (LocalInspectionMode.current) return remember(key, type, default) { mutableStateOf(default) }
+
+    configureStorageForComposition()
 
     val stored = remember(key, type, default) { Storage.value(key, default) }
     val state = remember(stored) { mutableStateOf(default, referentialEqualityPolicy()) }

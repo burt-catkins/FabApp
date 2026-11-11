@@ -1,6 +1,11 @@
 package com.burtwelding.fabapp.storage
 
+import androidx.compose.runtime.Composable
 import java.io.File
+
+@PublishedApi
+@Composable
+internal actual fun configureStorageForComposition() = Unit
 
 internal actual fun defaultStorageDatabasePath(): String? {
     val directory = desktopStorageDirectory(

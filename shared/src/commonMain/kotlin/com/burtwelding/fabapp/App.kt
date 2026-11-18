@@ -256,12 +256,12 @@ fun App() {
                 )
                 Tile(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
-                    text = "Miter Rise:\n$leftMiterRiseString",
+                    text = "Setback:\n$leftMiterRiseString",
                     pieceSide = Side.LEFT
                 )
                 Tile(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
-                    text = "Miter Rise:\n$rightMiterRiseString",
+                    text = "Setback:\n$rightMiterRiseString",
                     pieceSide = Side.RIGHT
                 )
             }

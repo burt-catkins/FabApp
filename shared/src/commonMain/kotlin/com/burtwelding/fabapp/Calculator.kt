@@ -8,16 +8,6 @@ import org.kimplify.deci.DeciConstants
 import org.kimplify.deci.RoundingMode
 
 object Calculator {
-    val savedItems: MutableMap<String, Item> = mutableMapOf()
-    fun itemNameExists (nameOfVariable: String) = savedItems.contains(nameOfVariable)
-    fun saveItem (valueToSave: Item, nameOfVariable: String): SaveVariableResult {
-        if (itemNameExists(nameOfVariable)) return SaveVariableResult.ALREADY_EXISTS
-        savedItems[nameOfVariable] = valueToSave
-        return SaveVariableResult.SUCCESS
-    }
-    fun <U: UnitType> convertUnits (numberToConvert: Number<*>): Number<U> {
-        TODO()
-    }
     fun convertInchesToMetric (inchesDecimal: Deci, metricLengthTypeDesired: Metric): Length =
         Length(
             displayUnits = metricLengthTypeDesired,

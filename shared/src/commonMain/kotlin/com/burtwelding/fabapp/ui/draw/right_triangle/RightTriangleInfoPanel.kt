@@ -23,8 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.burtwelding.fabapp.AppState
+import com.burtwelding.fabapp.Fraction
+import com.burtwelding.fabapp.ImperialFraction
 import com.burtwelding.fabapp.OperandType
-import com.burtwelding.fabapp.RightTriangleResetter
+import com.burtwelding.fabapp.RightTrianglePersist
 import com.burtwelding.fabapp.RightTriangleState
 import com.burtwelding.fabapp.darken
 import com.burtwelding.fabapp.item.Angle
@@ -40,11 +42,45 @@ import com.burtwelding.fabapp.ui.draw.NumberText
 @Composable
 fun RightTriangleInfoPanel (modifier: Modifier,
                             programState: RightTriangleState,
-                            resetter: RightTriangleResetter,
+                            programPersist: RightTrianglePersist,
                             appState: AppState
 ) {
     val operands = remember { mutableStateMapOf<OperandType, Number>() }
     val numbers = remember { mutableStateMapOf<OperandType, Number>() }
+    @Composable
+    fun Tile (
+        modifier: Modifier,
+        color: Color,
+        subTile: @Composable () -> Unit
+    ) {
+        Box(
+            modifier = modifier
+                .background(color)
+                .padding(5.dp)
+        ) {
+            subTile()
+        }
+    }
+    @Composable
+    fun ActionButton (
+        modifier: Modifier,
+        color: Color,
+        action: () -> Unit,
+        centeredComposableText: @Composable (modifier: Modifier) -> Unit
+    ) {
+        Tile(
+            modifier
+                .clickable { action() },
+            color,
+            subTile = {
+                Box (
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    centeredComposableText(Modifier.align(Alignment.Center))
+                }
+            }
+        )
+    }
     @Composable
     fun InfoTileButton (
         modifier: Modifier,
@@ -52,79 +88,88 @@ fun RightTriangleInfoPanel (modifier: Modifier,
         validateFunction: (Number?) -> String,
         validInputFunction: (Number?) -> Unit
     ) {
-        Box(
-            modifier = modifier
-                .background(operandType.color.gray(0.55f).darken(0.6f))
-                .padding(5.dp)
-                .clickable (enabled = operands.size < 2) {
-                    appState.numpadOutputFunction = { validOutput ->
-                        validInputFunction(validOutput)
-                        if (operands.size == 2) {
-                            val operandKeys = operands.keys
-                            val firstOperandType = operandKeys.first()
-                            val secondOperandType = operandKeys.last()
-                            fun getOperand (operandType: OperandType) =
-                                when (operandType) {
-                                    OperandType.RISE -> RightTriangle.Operand.Rise(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is rise but there aint no number"))))
-                                    OperandType.RUN -> RightTriangle.Operand.Run(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is run but there aint no number"))))
-                                    OperandType.DIAGONAL -> RightTriangle.Operand.Diagonal(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is diagonal but there aint no number"))))
-                                    OperandType.TOP_ANGLE -> RightTriangle.Operand.TopAngle(ItemHandle<Angle>(Angle(operands[operandType]?.toDeci()?: error("bruh the operand type is top angle but there aint no number"))))
-                                    OperandType.BOTTOM_ANGLE -> RightTriangle.Operand.BottomAngle(ItemHandle<Angle>(Angle(operands[operandType]?.toDeci()?: error("bruh the operand type is bottom angle but there aint no number"))))
+        Tile(
+            color = operandType.color.gray(0.55f).darken(0.6f),
+            modifier = modifier,
+            subTile = {
+                Box(
+                    modifier = modifier
+                        .clickable (enabled = operands.size < 2) {
+                            appState.numpadOutputFunction = { validOutput ->
+                                validInputFunction(validOutput)
+                                if (operands.size == 2) {
+                                    val operandKeys = operands.keys
+                                    val firstOperandType = operandKeys.first()
+                                    val secondOperandType = operandKeys.last()
+                                    fun getOperand (operandType: OperandType) =
+                                        when (operandType) {
+                                            OperandType.RISE -> RightTriangle.Operand.Rise(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is rise but there aint no number"))))
+                                            OperandType.RUN -> RightTriangle.Operand.Run(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is run but there aint no number"))))
+                                            OperandType.DIAGONAL -> RightTriangle.Operand.Diagonal(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is diagonal but there aint no number"))))
+                                            OperandType.TOP_ANGLE -> RightTriangle.Operand.TopAngle(ItemHandle<Angle>(Angle(operands[operandType]?.toDeci()?: error("bruh the operand type is top angle but there aint no number"))))
+                                            OperandType.BOTTOM_ANGLE -> RightTriangle.Operand.BottomAngle(ItemHandle<Angle>(Angle(operands[operandType]?.toDeci()?: error("bruh the operand type is bottom angle but there aint no number"))))
+                                        }
+                                    val calculation = RightTriangle(
+                                        getOperand(firstOperandType),
+                                        getOperand(secondOperandType)
+                                    ).calculate()
+                                    programState.rightTriangleCalculation = calculation
+                                    numbers[OperandType.RISE] = Number(calculation[OperandType.RISE]?.baseUnitDecimalValue?: error("yoooooooo the rise calculation is null!!"))
+                                    numbers[OperandType.RUN] = Number(calculation[OperandType.RUN]?.baseUnitDecimalValue?: error("yoooooooo the RUN calculation is null!!"))
+                                    numbers[OperandType.DIAGONAL] = Number(calculation[OperandType.DIAGONAL]?.baseUnitDecimalValue?: error("yoooooooo the DIAGONAL calculation is null!!"))
+                                    numbers[OperandType.TOP_ANGLE] = Number(calculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?: error("yoooooooo the TOP_ANGLE calculation is null!!"))
+                                    numbers[OperandType.BOTTOM_ANGLE] = Number(calculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?: error("yoooooooo the BOTTOM_ANGLE calculation is null!!"))
                                 }
-                            val calculation = RightTriangle(
-                                getOperand(firstOperandType),
-                                getOperand(secondOperandType)
-                            ).calculate()
-                            programState.rightTriangleCalculation = calculation
-                            numbers[OperandType.RISE] = Number(calculation[OperandType.RISE]?.baseUnitDecimalValue?: error("yoooooooo the rise calculation is null!!"))
-                            numbers[OperandType.RUN] = Number(calculation[OperandType.RUN]?.baseUnitDecimalValue?: error("yoooooooo the RUN calculation is null!!"))
-                            numbers[OperandType.DIAGONAL] = Number(calculation[OperandType.DIAGONAL]?.baseUnitDecimalValue?: error("yoooooooo the DIAGONAL calculation is null!!"))
-                            numbers[OperandType.TOP_ANGLE] = Number(calculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?: error("yoooooooo the TOP_ANGLE calculation is null!!"))
-                            numbers[OperandType.BOTTOM_ANGLE] = Number(calculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?: error("yoooooooo the BOTTOM_ANGLE calculation is null!!"))
+                            }
+                            appState.numpadValidateFunction = validateFunction
+                            appState.openNumpad = true
                         }
-                    }
-                    appState.numpadValidateFunction = validateFunction
-                    appState.openNumpad = true
-                }
-        ) {
-            Column (
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = operandType.name.replace('_', ' '),
-                    fontSize = 12.sp,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    color = Color.White
-                )
-                Canvas (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
                 ) {
-                    drawLine(
-                        color = Color.White,
-                        strokeWidth = 1.dp.toPx(),
-                        start = Offset(
-                            x = size.width * 1 / 10,
-                            y = 0f
-                        ),
-                        end = Offset(
-                            x = size.width * 9 / 10,
-                            y = 0f
+                    Column (
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = operandType.name.replace('_', ' '),
+                            fontSize = 12.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            color = Color.White
                         )
-                    )
+                        Canvas (
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                        ) {
+                            drawLine(
+                                color = Color.White,
+                                strokeWidth = 1.dp.toPx(),
+                                start = Offset(
+                                    x = size.width * 1 / 10,
+                                    y = 0f
+                                ),
+                                end = Offset(
+                                    x = size.width * 9 / 10,
+                                    y = 0f
+                                )
+                            )
+                        }
+                        NumberText(
+                            number = numbers[operandType],
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally),
+                            fontColor = Color.White,
+                            fontSizeSP = 18,
+                            maxDenominator = when (operandType) {
+                                OperandType.RISE, OperandType.RUN, OperandType.DIAGONAL -> programPersist.maxDenominator.denominator
+                                OperandType.TOP_ANGLE, OperandType.BOTTOM_ANGLE -> null
+                            },
+                            decimalPrecision = 1
+                        )
+                    }
                 }
-                NumberText(
-                    number = numbers[operandType],
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally),
-                    fontColor = Color.White,
-                    fontSizeSP = 18
-                )
             }
-        }
+        )
     }
     Row (
         modifier = modifier
@@ -132,16 +177,59 @@ fun RightTriangleInfoPanel (modifier: Modifier,
             .padding(horizontal = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Box(
+        Column (
             modifier = Modifier
-                .fillMaxHeight().weight(2f)
-                .background(Color.DarkGray.darken(0.2f))
-                .clickable{ resetter.resetProgram++ }
+                .fillMaxWidth()
+                .weight(2f),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(
-                text = "RESET",
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White
+            ActionButton(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                color = Color.DarkGray.darken(0.2f),
+                action = { programPersist.resetProgram++ },
+                centeredComposableText = { modifier ->
+                    Text(
+                        modifier = modifier,
+                        text = "RESET",
+                        color = Color.LightGray,
+                        fontSize = 20.sp
+                    )
+                }
+            )
+            ActionButton(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxWidth(),
+                color = Color.Gray.darken(0.2f),
+                action = { programPersist.maxDenominator = when (programPersist.maxDenominator) {
+                    ImperialFraction.WHOLE -> ImperialFraction.SIXTY_FOURTHS
+                    ImperialFraction.HALVES -> ImperialFraction.WHOLE
+                    ImperialFraction.QUARTERS -> ImperialFraction.HALVES
+                    ImperialFraction.EIGHTHS -> ImperialFraction.QUARTERS
+                    ImperialFraction.SIXTEENTHS -> ImperialFraction.EIGHTHS
+                    ImperialFraction.THIRTY_SECONDS -> ImperialFraction.SIXTEENTHS
+                    ImperialFraction.SIXTY_FOURTHS -> ImperialFraction.THIRTY_SECONDS
+                } },
+                centeredComposableText = { modifier ->
+                    if (programPersist.maxDenominator == ImperialFraction.WHOLE) {
+                        Text(
+                            modifier = modifier,
+                            text = "WHOLE",
+                            color = Color.Black,
+                            fontSize = 20.sp
+                        )
+                    } else {
+                        NumberText(
+                            Number(null, Fraction(Deci.ONE, programPersist.maxDenominator.denominator)),
+                            modifier = modifier,
+                            fontColor = Color.Black,
+                            fontSizeSP = 40,
+                            maxDenominator = programPersist.maxDenominator.denominator
+                        )
+                    }
+                }
             )
         }
         Column (
@@ -155,7 +243,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                 validateFunction = { input ->
                     if (input == null)
                         ""
-                    else if (input < Deci.ZERO)
+                    else if (input <= Deci.ZERO)
                         "Rise be greater than 0"
                     else if (
                         run {
@@ -181,7 +269,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                 validateFunction = { input ->
                     if (input == null)
                         ""
-                    else if (input < Deci.ZERO)
+                    else if (input <= Deci.ZERO)
                         "Run be greater than 0"
                     else if (
                         run {
@@ -207,7 +295,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                 validateFunction = { input ->
                     if (input == null)
                         ""
-                    else if (input < Deci.ZERO)
+                    else if (input <= Deci.ZERO)
                         "Diagonal be greater than 0"
                     else if (
                         run {

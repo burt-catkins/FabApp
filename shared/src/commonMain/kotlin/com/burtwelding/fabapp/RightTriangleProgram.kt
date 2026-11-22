@@ -1,35 +1,23 @@
 package com.burtwelding.fabapp
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.burtwelding.fabapp.item.Angle
 import com.burtwelding.fabapp.item.Length
 import com.burtwelding.fabapp.item.RightTriangle
 import com.burtwelding.fabapp.storage.ItemHandle
-import com.burtwelding.fabapp.ui.draw.NumpadInput
 import com.burtwelding.fabapp.ui.draw.right_triangle.RightTriangleCanvas
 import com.burtwelding.fabapp.ui.draw.right_triangle.RightTriangleInfoPanel
 import org.kimplify.deci.Deci
-import kotlin.collections.getValue
-import kotlin.collections.setValue
 
 enum class OperandType (val color: Color) {
     RISE (Color.Red),
@@ -38,8 +26,9 @@ enum class OperandType (val color: Color) {
     TOP_ANGLE (Color.Magenta),
     BOTTOM_ANGLE (Color.Green)
 }
-class RightTriangleResetter {
+class RightTrianglePersist {
     var resetProgram by mutableIntStateOf(0)
+    var maxDenominator by mutableStateOf(ImperialFraction.THIRTY_SECONDS)
 }
 class RightTriangleState {
     var rightTriangleCalculation by mutableStateOf(
@@ -51,8 +40,8 @@ class RightTriangleState {
 }
 @Composable
 fun RightTriangleProgram (appState: AppState) {
-    val resetter by remember { mutableStateOf(RightTriangleResetter()) }
-    key(resetter.resetProgram) { // there is some complicated reason why this is called key, but basically once this key changes, everything in the body starts over
+    val persist by remember { mutableStateOf(RightTrianglePersist()) }
+    key(persist.resetProgram) { // there is some complicated reason why this is called key, but basically once this key changes, everything in the body starts over
         val programState = RightTriangleState()
         Column (
             modifier = Modifier
@@ -68,7 +57,7 @@ fun RightTriangleProgram (appState: AppState) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                resetter = resetter,
+                programPersist = persist,
                 programState = programState,
                 appState = appState
             )

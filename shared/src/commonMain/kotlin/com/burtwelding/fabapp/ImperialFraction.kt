@@ -3,6 +3,7 @@ package com.burtwelding.fabapp
 import org.kimplify.deci.Deci
 
 enum class ImperialFraction (val denominator: Deci) {
+    WHOLE(Deci.ONE),
     HALVES(Deci(2)),
     QUARTERS(Deci(4)),
     EIGHTHS(Deci(8)),

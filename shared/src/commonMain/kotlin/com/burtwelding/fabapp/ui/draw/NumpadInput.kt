@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.Fraction
 import com.burtwelding.fabapp.Number
+import com.burtwelding.fabapp.RoundResult
 import com.burtwelding.fabapp.darken
 import fabapp.shared.generated.resources.Res
 import fabapp.shared.generated.resources.icon_numpad_backspace
@@ -187,7 +188,8 @@ fun NumpadInput (
                 denominator = numpadState.denominatorBuffer?.buffer,
                 modifier = Modifier.align(Alignment.Center),
                 fontColor = Color.Black,
-                fontSizeSP = 30
+                fontSizeSP = 30,
+                roundResult = RoundResult.EXACT
             )
         }
         // Numpad, top 2

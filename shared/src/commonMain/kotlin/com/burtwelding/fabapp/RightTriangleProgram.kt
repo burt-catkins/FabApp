@@ -32,11 +32,11 @@ import kotlin.collections.getValue
 import kotlin.collections.setValue
 
 enum class OperandType (val color: Color) {
-    RISE (Color.Red.darken(0.7f)),
-    RUN (Color.Yellow.darken(0.7f)),
-    DIAGONAL (Color.Blue.darken(0.7f)),
-    TOP_ANGLE (Color.Magenta.darken(0.7f)),
-    BOTTOM_ANGLE (Color.Green.darken(0.7f))
+    RISE (Color.Red),
+    RUN (Color.Yellow),
+    DIAGONAL (Color.Blue),
+    TOP_ANGLE (Color.Magenta),
+    BOTTOM_ANGLE (Color.Green)
 }
 class RightTriangleResetter {
     var resetProgram by mutableIntStateOf(0)
@@ -60,10 +60,14 @@ fun RightTriangleProgram (appState: AppState) {
         ) {
             RightTriangleCanvas(
                 programState = programState,
-                modifier = Modifier.fillMaxWidth().weight(3f)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             )
             RightTriangleInfoPanel(
-                modifier = Modifier.fillMaxWidth().weight(2f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 resetter = resetter,
                 programState = programState,
                 appState = appState

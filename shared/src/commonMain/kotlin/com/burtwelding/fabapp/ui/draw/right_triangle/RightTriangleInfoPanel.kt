@@ -1,5 +1,6 @@
 package com.burtwelding.fabapp.ui.draw.right_triangle
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,20 +10,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.OperandType
 import com.burtwelding.fabapp.RightTriangleResetter
@@ -32,12 +31,10 @@ import com.burtwelding.fabapp.item.Angle
 import com.burtwelding.fabapp.item.Length
 import com.burtwelding.fabapp.item.RightTriangle
 import com.burtwelding.fabapp.storage.ItemHandle
-import deci.trim
 import org.kimplify.deci.Deci
 import com.burtwelding.fabapp.Number
-import com.burtwelding.fabapp.UnitType
+import com.burtwelding.fabapp.gray
 import com.burtwelding.fabapp.ui.draw.NumberText
-import kotlin.collections.getValue
 
 
 @Composable
@@ -57,7 +54,8 @@ fun RightTriangleInfoPanel (modifier: Modifier,
     ) {
         Box(
             modifier = modifier
-                .background(operandType.color.darken(0.7f))
+                .background(operandType.color.gray(0.55f).darken(0.6f))
+                .padding(5.dp)
                 .clickable (enabled = operands.size < 2) {
                     appState.numpadOutputFunction = { validOutput ->
                         validInputFunction(validOutput)
@@ -89,11 +87,43 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                     appState.openNumpad = true
                 }
         ) {
-            NumberText(
-                number = numbers[operandType],
+            Column (
                 modifier = Modifier
-                    .align(Alignment.Center)
-            )
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = operandType.name.replace('_', ' '),
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    color = Color.White
+                )
+                Canvas (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                ) {
+                    drawLine(
+                        color = Color.White,
+                        strokeWidth = 1.dp.toPx(),
+                        start = Offset(
+                            x = size.width * 1 / 10,
+                            y = 0f
+                        ),
+                        end = Offset(
+                            x = size.width * 9 / 10,
+                            y = 0f
+                        )
+                    )
+                }
+                NumberText(
+                    number = numbers[operandType],
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally),
+                    fontColor = Color.White,
+                    fontSizeSP = 18
+                )
+            }
         }
     }
     Row (

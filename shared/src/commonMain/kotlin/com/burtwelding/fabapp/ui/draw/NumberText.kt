@@ -1,6 +1,7 @@
 package com.burtwelding.fabapp.ui.draw
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.burtwelding.fabapp.Fraction
@@ -29,22 +31,20 @@ import org.kimplify.deci.RoundingMode
 fun NumberText (decimal: String?,
                 numerator: String?,
                 denominator: String?,
-                modifier: Modifier) {
-    // If numerator is null, don't draw a fraction
-    // Else draw the line and if denominator is null, show the square char (until its set to a string)
-    // The function assumes that if you don't want a fraction anymore, just set the numerator to null
-    // If there is neither a decimal (empty string) nor a fraction, then just do an empty string
-    //      The reason this isn't a 0 is that this may be used as a placeholder to await input
-    //          We don't want this to be interpreted as an actual input of 0. 0 is 0. Nothing is nothing.
+                modifier: Modifier,
+                fontColor: Color,
+                fontSizeSP: Int) {
     Row (
-        modifier = modifier
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy((fontSizeSP.toFloat() / 3.5).dp)
     ) {
         // Number
         Text (
             modifier = Modifier
                 .align(Alignment.CenterVertically),
             text = decimal?.let{ if (decimal == "0" && numerator != null) "" else decimal }?: "",
-            fontSize = 40.sp
+            fontSize = fontSizeSP.sp,
+            color = fontColor
         )
         if (numerator != null) {
             // Fraction
@@ -55,8 +55,9 @@ fun NumberText (decimal: String?,
             ) {
                 // Numerator
                 Text(
-                    text = numerator,
-                    fontSize = 20.sp
+                    text = if (numerator == "") "■" else numerator,
+                    fontSize = (fontSizeSP.toFloat() * 2 / 3).sp,
+                    color = fontColor
                 )
                 // Fraction line
                 Canvas (
@@ -65,7 +66,7 @@ fun NumberText (decimal: String?,
                         .height(4.dp)
                 ) {
                     drawLine(
-                        color = Color.Black,
+                        color = fontColor,
                         strokeWidth = 2.dp.toPx(),
                         start = Offset(
                             x = 0f,
@@ -79,8 +80,9 @@ fun NumberText (decimal: String?,
                 }
                 // Denominator
                 Text(
-                    text = denominator?: "□",
-                    fontSize = 20.sp
+                    text = denominator?.let{ if (denominator == "") "■" else denominator }?: "□",
+                    fontSize = (fontSizeSP.toFloat() * 2 / 3).sp,
+                    color = fontColor
                 )
             }
         }
@@ -88,7 +90,7 @@ fun NumberText (decimal: String?,
 }
 
 @Composable
-fun NumberText (number: Number?, modifier: Modifier) {
+fun NumberText (number: Number?, modifier: Modifier, fontColor: Color, fontSizeSP: Int) {
     fun getFractionalNumber (decimal: Deci, denominator: ImperialFraction): ImperialFractionalResult {
         // TODO: Implement unit conversion
 //        val inchesDecimal: Deci = when (decimal.displayUnits) {
@@ -130,6 +132,8 @@ fun NumberText (number: Number?, modifier: Modifier) {
         decimal = newSimplifiedFraction?.inches?.trim(3),
         numerator = newSimplifiedFraction?.fraction?.numerator?.trim(3),
         denominator = newSimplifiedFraction?.fraction?.denominator?.trim(3),
-        modifier = modifier
+        modifier = modifier,
+        fontColor = fontColor,
+        fontSizeSP = fontSizeSP
     )
 }

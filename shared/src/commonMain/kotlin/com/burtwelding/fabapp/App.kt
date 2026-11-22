@@ -68,11 +68,12 @@ fun App() {
                                 enabled = false,
                                 onClick = {}
                             )
+                            .background(Color(0.1f, 0.1f, 0.1f, 0.5f))
                     ) {
                         Box (
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(6f)
+                                .weight(1f)
                                 .clickable {
                                     appState.openNumpad = false
                                 }
@@ -80,8 +81,7 @@ fun App() {
                         Box (
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0.1f, 0.1f, 0.1f, 0.5f))
-                                .weight(4.5f)
+                                .weight(1.3f)
                         ) {
                             NumpadInput(appState)
                         }

@@ -1,6 +1,7 @@
 package com.burtwelding.fabapp.ui.draw
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +28,16 @@ import androidx.compose.ui.unit.dp
 import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.Fraction
 import com.burtwelding.fabapp.Number
+import com.burtwelding.fabapp.darken
+import fabapp.shared.generated.resources.Res
+import fabapp.shared.generated.resources.icon_numpad_backspace
+import fabapp.shared.generated.resources.icon_numpad_clear
+import fabapp.shared.generated.resources.icon_numpad_confirm
+import fabapp.shared.generated.resources.icon_numpad_fraction_clear
+import fabapp.shared.generated.resources.icon_numpad_fraction_denominator
+import fabapp.shared.generated.resources.icon_numpad_fraction_numerator
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 import org.kimplify.deci.Deci
 import org.kimplify.deci.exception.DeciException
 
@@ -53,58 +65,107 @@ fun NumpadInput (
     @Composable
     fun Tile (
         modifier: Modifier,
-        functionWithCurrentBuffer: (Buffer?) -> Unit,
-        text: String
+        subTile: @Composable () -> Unit
     ) {
         Box(
             modifier = modifier
                 .padding(3.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.LightGray)
-                    .clickable {functionWithCurrentBuffer(
-                        when (numpadState.currentBufferSelected) {
-                            BufferType.NUMBER -> numpadState.numberBuffer
-                            BufferType.NUMERATOR -> numpadState.numeratorBuffer
-                            BufferType.DENOMINATOR -> numpadState.denominatorBuffer
-                        }
-                    )}
+                modifier = modifier
+                    .background(Color.Gray)
             ) {
-                Text(
-                    text = text,
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    fontSize = TextUnit(24f, TextUnitType.Sp)
-                )
+                subTile()
             }
         }
+    }
+    fun getCurrentBuffer () = when (numpadState.currentBufferSelected) {
+        BufferType.NUMBER -> numpadState.numberBuffer
+        BufferType.NUMERATOR -> numpadState.numeratorBuffer
+        BufferType.DENOMINATOR -> numpadState.denominatorBuffer
+    }
+    @Composable
+    fun ActionTile (
+        modifier: Modifier,
+        action: () -> Unit,
+        icon: DrawableResource,
+        description: String
+    ) {
+        Tile(
+            modifier = modifier,
+            subTile = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { action() }
+                        .padding(10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(icon),
+                        contentDescription = description,
+                        modifier = Modifier
+                            .size(60.dp)
+                            .align(Alignment.Center)
+                    )
+                }
+            }
+        )
+    }
+    @Composable
+    fun NumberTile (
+        modifier: Modifier,
+        numberChar: Char,
+    ) {
+        Tile (
+            modifier = modifier,
+            subTile = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            getCurrentBuffer()?.buffer += numberChar
+                            numpadState.error = ""
+                        }
+                ) {
+                    Text(
+                        text = "$numberChar",
+                        modifier = Modifier
+                            .align(Alignment.Center),
+                        fontSize = TextUnit(24f, TextUnitType.Sp)
+                    )
+                }
+            }
+        )
     }
     Column (
         modifier = Modifier
             .fillMaxSize()
     ) {
-        // Error Panel
-        if (numpadState.error != "") {
-            Box (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(0.5f)
-                    .background(Color.Red)
-                    .border(
-                        border = BorderStroke(
-                            width = 5.dp,
-                            color = Color.Black
-                        )
-                    )
-            ) {
-                Text(
-                    text = numpadState.error,
+        Box (
+            modifier = Modifier
+                .weight(0.5f)
+                .fillMaxWidth()
+        ) {
+            // Error Panel
+            if (numpadState.error != "") {
+                Box (
                     modifier = Modifier
-                        .align(Alignment.Center),
-                    fontSize = TextUnit(13f, TextUnitType.Sp)
-                )
+                        .fillMaxSize()
+                        .background(Color.Red.darken(0.3f))
+                        .border(
+                            border = BorderStroke(
+                                width = 5.dp,
+                                color = Color.Black
+                            )
+                        )
+                ) {
+                    Text(
+                        text = numpadState.error,
+                        modifier = Modifier
+                            .align(Alignment.Center),
+                        fontSize = TextUnit(13f, TextUnitType.Sp)
+                    )
+                }
             }
         }
         // Buffer Panel
@@ -112,7 +173,7 @@ fun NumpadInput (
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .background(Color.White)
+                .background(Color.LightGray)
                 .border(
                     border = BorderStroke(
                         width = 5.dp,
@@ -124,7 +185,9 @@ fun NumpadInput (
                 decimal = numpadState.numberBuffer.buffer,
                 numerator = numpadState.numeratorBuffer?.buffer,
                 denominator = numpadState.denominatorBuffer?.buffer,
-                modifier = Modifier.align(Alignment.Center)
+                modifier = Modifier.align(Alignment.Center),
+                fontColor = Color.Black,
+                fontSizeSP = 30
             )
         }
         // Numpad, top 2
@@ -132,64 +195,57 @@ fun NumpadInput (
             .fillMaxWidth()
             .weight(2f)
         ) {
-            Tile(
+            ActionTile(
                 modifier = Modifier.fillMaxHeight().weight(1f),
-                functionWithCurrentBuffer = {
+                action = {
                     numpadState.numberBuffer = Buffer()
                     numpadState.numeratorBuffer = null
                     numpadState.denominatorBuffer = null
                     numpadState.currentBufferSelected = BufferType.NUMBER
+                    numpadState.error = ""
                 },
-                text = "CLEAR"
+                icon = Res.drawable.icon_numpad_clear,
+                description = "Clear"
             )
             Column (
                 modifier = Modifier.fillMaxHeight().weight(1f)
             ) {
-
-                Tile(
+                NumberTile(
                     modifier = Modifier.weight(1f),
-                    functionWithCurrentBuffer = { it?.buffer += "7" },
-                    text = "7"
+                    numberChar = '7'
                 )
-                Tile(
+                NumberTile(
                     modifier = Modifier.weight(1f),
-                    functionWithCurrentBuffer = { it?.buffer += "4" },
-                    text = "4"
+                    numberChar = '4'
                 )
             }
             Column (
                 modifier = Modifier.fillMaxHeight().weight(1f)
             ) {
-
-                Tile(
+                NumberTile(
                     modifier = Modifier.weight(1f),
-                    functionWithCurrentBuffer = { it?.buffer += "8" },
-                    text = "8"
+                    numberChar = '8'
                 )
-                Tile(
+                NumberTile(
                     modifier = Modifier.weight(1f),
-                    functionWithCurrentBuffer = { it?.buffer += "5" },
-                    text = "5"
+                    numberChar = '5'
                 )
             }
             Column (
                 modifier = Modifier.fillMaxHeight().weight(1f)
             ) {
-
-                Tile(
+                NumberTile(
                     modifier = Modifier.weight(1f),
-                    functionWithCurrentBuffer = { it?.buffer += "9" },
-                    text = "9"
+                    numberChar = '9'
                 )
-                Tile(
+                NumberTile(
                     modifier = Modifier.weight(1f),
-                    functionWithCurrentBuffer = { it?.buffer += "6" },
-                    text = "6"
+                    numberChar = '6'
                 )
             }
-            Tile(
+            ActionTile(
                 modifier = Modifier.fillMaxHeight().weight(1f),
-                functionWithCurrentBuffer = {
+                action = {
                     // First validate if buffers are valid as a group.
                     if (numpadState.numeratorBuffer?.buffer == "" || numpadState.denominatorBuffer?.buffer == "" || (numpadState.numeratorBuffer != null && numpadState.denominatorBuffer == null)) {
                         numpadState.error = "Finish fraction or clear it"
@@ -208,7 +264,11 @@ fun NumpadInput (
                                     )
                                 }
                             }
-                            val inputNumber = Number(number, fraction)
+                            val inputNumber =
+                                if (number == null && fraction == null)
+                                    null
+                                else
+                                    Number(number, fraction)
                             val inputValidationResult = appState.numpadValidateFunction(inputNumber)
                             if (inputValidationResult == "") {
                                 appState.numpadOutputFunction(inputNumber)
@@ -226,7 +286,8 @@ fun NumpadInput (
                         }
                     }
                 },
-                text = "CONFIRM"
+                icon = Res.drawable.icon_numpad_confirm,
+                description = "Confirm"
             )
         }
         // Numpad, bottom 2
@@ -234,12 +295,15 @@ fun NumpadInput (
             .fillMaxWidth()
             .weight(2f)
         ) {
-            Tile(
+            ActionTile(
                 modifier = Modifier.fillMaxHeight().weight(1f),
-                functionWithCurrentBuffer = {
-                    it?.buffer = it.buffer.dropLast(1)
+                action = {
+                    val currentBuffer = getCurrentBuffer()
+                    currentBuffer?.buffer = currentBuffer.buffer.dropLast(1)
+                    numpadState.error = ""
                 },
-                text = "DELETE"
+                icon = Res.drawable.icon_numpad_backspace,
+                description = "Backspace"
             )
             Column (
                 modifier = Modifier.fillMaxHeight().weight(2f)
@@ -247,45 +311,40 @@ fun NumpadInput (
                 Row (
                     modifier = Modifier.fillMaxWidth().weight(1f)
                 ) {
-                    Tile(
+                    NumberTile(
                         modifier = Modifier.weight(1f),
-                        functionWithCurrentBuffer = { it?.buffer += "1" },
-                        text = "1"
+                        numberChar = '1'
                     )
-                    Tile(
+                    NumberTile(
                         modifier = Modifier.weight(1f),
-                        functionWithCurrentBuffer = { it?.buffer += "2" },
-                        text = "2"
+                        numberChar = '2'
                     )
                 }
-                Tile(
+                NumberTile(
                     modifier = Modifier.fillMaxWidth().weight(1f),
-                    functionWithCurrentBuffer = { it?.buffer += "0" },
-                    text = "0"
+                    numberChar = '0'
                 )
             }
             Column (
                 modifier = Modifier.fillMaxHeight().weight(1f)
             ) {
 
-                Tile(
+                NumberTile(
                     modifier = Modifier.weight(1f),
-                    functionWithCurrentBuffer = { it?.buffer += "3" },
-                    text = "3"
+                    numberChar = '3'
                 )
-                Tile(
+                NumberTile(
                     modifier = Modifier.weight(1f),
-                    functionWithCurrentBuffer = { it?.buffer += "." },
-                    text = "."
+                    numberChar = '.'
                 )
             }
-            Tile(
+            ActionTile(
                 modifier = Modifier.fillMaxHeight().weight(1f),
-                functionWithCurrentBuffer = { currentBuffer ->
+                action = {
                     numpadState.currentBufferSelected = when (numpadState.currentBufferSelected) {
                         BufferType.NUMBER -> BufferType.NUMERATOR
                         BufferType.NUMERATOR -> {
-                            if (currentBuffer?.buffer == "")
+                            if (getCurrentBuffer()?.buffer == "")
                                 BufferType.NUMBER
                             else BufferType.DENOMINATOR
                         }
@@ -299,8 +358,14 @@ fun NumpadInput (
                         BufferType.NUMERATOR -> numpadState.numeratorBuffer = Buffer()
                         BufferType.DENOMINATOR -> numpadState.denominatorBuffer = Buffer()
                     }
+                    numpadState.error = ""
                 },
-                text = "FRACTION"
+                icon = when (numpadState.currentBufferSelected) {
+                    BufferType.NUMBER -> Res.drawable.icon_numpad_fraction_numerator
+                    BufferType.NUMERATOR -> if (numpadState.numeratorBuffer?.buffer == "") Res.drawable.icon_numpad_fraction_clear else Res.drawable.icon_numpad_fraction_denominator
+                    BufferType.DENOMINATOR -> Res.drawable.icon_numpad_fraction_clear
+                },
+                description = "Fraction"
             )
         }
     }

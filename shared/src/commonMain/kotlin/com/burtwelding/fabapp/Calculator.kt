@@ -2,7 +2,6 @@ package com.burtwelding.fabapp
 
 import com.burtwelding.fabapp.item.Item
 import com.burtwelding.fabapp.item.Length
-import com.burtwelding.fabapp.item.Number
 import org.kimplify.deci.Deci
 import org.kimplify.deci.DeciConstants
 import org.kimplify.deci.RoundingMode
@@ -30,37 +29,6 @@ object Calculator {
                     throw IllegalArgumentException("bruh aint no metric bruh")
             }
         )
-    fun getFractionalInches (length: Length, denominator: ImperialFraction): ImperialFractionalResult {
-        val inchesDecimal: Deci = when (length.displayUnits) {
-            Imperial.INCH, null -> length.baseUnitDecimalValue
-            Imperial.FOOT -> length.baseUnitDecimalValue.times(Deci(12))
-            Imperial.YARD -> length.baseUnitDecimalValue.times(Deci(36))
-            Metric.MILLIMETERS -> convertMetricToInches(length).baseUnitDecimalValue
-            Metric.CENTIMETERS -> convertMetricToInches(length).baseUnitDecimalValue
-            Metric.METERS -> convertMetricToInches(length).baseUnitDecimalValue
-        }
-        val wholeInches = inchesDecimal.setScale(0, RoundingMode.DOWN)
-        val remainder = inchesDecimal.minus(wholeInches)
-        val numeratorDecimal = remainder.times(denominator.denominator)
-        val numeratorWhole = numeratorDecimal.setScale(0, RoundingMode.DOWN)
-        val numeratorRemainder = numeratorDecimal.minus(numeratorWhole)
-        val roundResult = when {
-            numeratorRemainder.isZero() -> RoundResult.EXACT
-            numeratorRemainder >= Deci("0.5") -> RoundResult.UP
-            else -> RoundResult.DOWN
-        }
-        val roundedNumerator = numeratorDecimal.setScale(0, RoundingMode.HALF_UP)
-        val roundedNumeratorRoundedToWholeNumber = roundedNumerator == denominator.denominator
-        val roundedNumeratorPotentiallyWrapped = if (roundedNumeratorRoundedToWholeNumber) Deci.ZERO else roundedNumerator
-        return ImperialFractionalResult(
-            inches = wholeInches + if (roundedNumeratorRoundedToWholeNumber) Deci.ONE else Deci.ZERO,
-            fraction = if (roundedNumeratorPotentiallyWrapped == Deci.ZERO) null else Fraction(
-                originalNumerator = roundedNumeratorPotentiallyWrapped,
-                originalDenominator = denominator.denominator
-            ),
-            roundResult = roundResult
-        )
-    }
     //fun getTotalWeightInPounds (pieces: List<Piece>, metalType: MetalType) =
     //    pieces.map { piece -> piece.getWeightCubicFeet()?: throw AssertionError("All pieces must have type of metal defined") }.sumDeci()
     fun convertRadiansToDegrees (radianAmount: Deci) =

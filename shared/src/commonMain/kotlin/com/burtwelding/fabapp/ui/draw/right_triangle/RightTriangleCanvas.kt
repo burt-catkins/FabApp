@@ -25,8 +25,8 @@ fun RightTriangleCanvas (
     Canvas( modifier = modifier ) {
         val scalar = 0.8f
         val maxLine = min(size.width, size.height) * scalar
-        val run = programState.rightTriangleCalculation.run.baseUnitDecimalValue.toFloat()
-        val rise = programState.rightTriangleCalculation.rise.baseUnitDecimalValue.toFloat()
+        val run = programState.rightTriangleCalculation[OperandType.RUN]?.baseUnitDecimalValue?.toFloat()?: error("man i tried to like draw the run but its fugging null! what da hell!")
+        val rise = programState.rightTriangleCalculation[OperandType.RISE]?.baseUnitDecimalValue?.toFloat()?: error("what goin on here man the fugging rise is null! im tryna draw it! bruh!")
         val runScaled = if (run > rise) maxLine else maxLine * run / rise
         val riseScaled = if (rise > run) maxLine else maxLine * rise / run
         val squarePoint = Offset(
@@ -64,7 +64,7 @@ fun RightTriangleCanvas (
             bottomPoint.x - bottomRadius,
             bottomPoint.y - bottomRadius
         )
-        val bottomAngle = programState.rightTriangleCalculation.bottomAngle.baseUnitDecimalValue.toFloat()
+        val bottomAngle = programState.rightTriangleCalculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("bruh! the bottom angle null! i cant draw that shit! fix it!")
         drawArc(
             color = OperandType.BOTTOM_ANGLE.color,
             startAngle = -180f,
@@ -81,7 +81,7 @@ fun RightTriangleCanvas (
             topPoint.x - topRadius,
             topPoint.y - topRadius
         )
-        val topAngle = programState.rightTriangleCalculation.topAngle.baseUnitDecimalValue.toFloat()
+        val topAngle = programState.rightTriangleCalculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("yo what??? the top angle null! how can I draw a top angle arc when its null! what the hell man!")
         drawArc(
             color = OperandType.TOP_ANGLE.color,
             startAngle = 90f,

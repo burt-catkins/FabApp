@@ -15,6 +15,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,6 +34,10 @@ import com.burtwelding.fabapp.item.RightTriangle
 import com.burtwelding.fabapp.storage.ItemHandle
 import deci.trim
 import org.kimplify.deci.Deci
+import com.burtwelding.fabapp.Number
+import com.burtwelding.fabapp.UnitType
+import com.burtwelding.fabapp.ui.draw.NumberText
+import kotlin.collections.getValue
 
 
 @Composable
@@ -41,46 +46,53 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                             resetter: RightTriangleResetter,
                             appState: AppState
 ) {
+    val operands = remember { mutableStateMapOf<OperandType, Number>() }
+    val numbers = remember { mutableStateMapOf<OperandType, Number>() }
     @Composable
     fun InfoTileButton (
         modifier: Modifier,
         operandType: OperandType,
-        validateFunction: (String) -> String,
-        validInputFunction: (String) -> Unit
+        validateFunction: (Number?) -> String,
+        validInputFunction: (Number?) -> Unit
     ) {
         Box(
             modifier = modifier
                 .background(operandType.color.darken(0.7f))
-                .clickable (enabled = programState.operands.size < 2) {
+                .clickable (enabled = operands.size < 2) {
                     appState.numpadOutputFunction = { validOutput ->
                         validInputFunction(validOutput)
-                        if (programState.operands.size == 2) {
-                            programState.rightTriangleCalculation = RightTriangle(
-                                programState.operands.values.first(),
-                                programState.operands.values.last()
+                        if (operands.size == 2) {
+                            val operandKeys = operands.keys
+                            val firstOperandType = operandKeys.first()
+                            val secondOperandType = operandKeys.last()
+                            fun getOperand (operandType: OperandType) =
+                                when (operandType) {
+                                    OperandType.RISE -> RightTriangle.Operand.Rise(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is rise but there aint no number"))))
+                                    OperandType.RUN -> RightTriangle.Operand.Run(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is run but there aint no number"))))
+                                    OperandType.DIAGONAL -> RightTriangle.Operand.Diagonal(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is diagonal but there aint no number"))))
+                                    OperandType.TOP_ANGLE -> RightTriangle.Operand.TopAngle(ItemHandle<Angle>(Angle(operands[operandType]?.toDeci()?: error("bruh the operand type is top angle but there aint no number"))))
+                                    OperandType.BOTTOM_ANGLE -> RightTriangle.Operand.BottomAngle(ItemHandle<Angle>(Angle(operands[operandType]?.toDeci()?: error("bruh the operand type is bottom angle but there aint no number"))))
+                                }
+                            val calculation = RightTriangle(
+                                getOperand(firstOperandType),
+                                getOperand(secondOperandType)
                             ).calculate()
-                            programState.runText = programState.rightTriangleCalculation.run.baseUnitDecimalValue.trim(3)
-                            programState.riseText = programState.rightTriangleCalculation.rise.baseUnitDecimalValue.trim(3)
-                            programState.diagonalText = programState.rightTriangleCalculation.diagonal.baseUnitDecimalValue.trim(3)
-                            programState.topAngleText = programState.rightTriangleCalculation.topAngle.baseUnitDecimalValue.trim(3)
-                            programState.bottomAngleText = programState.rightTriangleCalculation.bottomAngle.baseUnitDecimalValue.trim(3)
+                            programState.rightTriangleCalculation = calculation
+                            numbers[OperandType.RISE] = Number(calculation[OperandType.RISE]?.baseUnitDecimalValue?: error("yoooooooo the rise calculation is null!!"))
+                            numbers[OperandType.RUN] = Number(calculation[OperandType.RUN]?.baseUnitDecimalValue?: error("yoooooooo the RUN calculation is null!!"))
+                            numbers[OperandType.DIAGONAL] = Number(calculation[OperandType.DIAGONAL]?.baseUnitDecimalValue?: error("yoooooooo the DIAGONAL calculation is null!!"))
+                            numbers[OperandType.TOP_ANGLE] = Number(calculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?: error("yoooooooo the TOP_ANGLE calculation is null!!"))
+                            numbers[OperandType.BOTTOM_ANGLE] = Number(calculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?: error("yoooooooo the BOTTOM_ANGLE calculation is null!!"))
                         }
                     }
                     appState.numpadValidateFunction = validateFunction
                     appState.openNumpad = true
                 }
         ) {
-            Text(
-                text = when (operandType) {
-                    OperandType.RISE -> programState.riseText
-                    OperandType.RUN -> programState.runText
-                    OperandType.DIAGONAL -> programState.diagonalText
-                    OperandType.TOP_ANGLE -> programState.topAngleText
-                    OperandType.BOTTOM_ANGLE -> programState.bottomAngleText
-                },
+            NumberText(
+                number = numbers[operandType],
                 modifier = Modifier
-                    .align(Alignment.Center),
-                color = Color.White
+                    .align(Alignment.Center)
             )
         }
     }
@@ -93,7 +105,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
         Box(
             modifier = Modifier
                 .fillMaxHeight().weight(2f)
-                .background(Color.Black)
+                .background(Color.DarkGray.darken(0.2f))
                 .clickable{ resetter.resetProgram++ }
         ) {
             Text(
@@ -111,92 +123,106 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 operandType = OperandType.RISE,
                 validateFunction = { input ->
-                    if (input == "")
+                    if (input == null)
                         ""
-                    else if (Deci(input) < Deci.ZERO)
+                    else if (input < Deci.ZERO)
                         "Rise be greater than 0"
-                    else if (programState.operands[OperandType.DIAGONAL] != null && Deci(programState.diagonalText) < Deci(input))
+                    else if (
+                        run {
+                            val diagonal = operands[OperandType.DIAGONAL]
+                            diagonal?.let { diagonal <= input }?: false
+                        })
                         "Rise must be less than the diagonal"
                     else ""
                 },
                 validInputFunction = { validInput ->
-                    programState.riseText = validInput
-                    if (validInput == "")
-                        programState.operands.remove(OperandType.RISE)
-                    else
-                        programState.operands[OperandType.RISE] = RightTriangle.Operand.Rise(
-                            ItemHandle<Length>(Length(Deci(validInput)))
-                        )
+                    if (validInput == null) {
+                        operands.remove(OperandType.RISE)
+                        numbers.remove(OperandType.RISE)
+                    } else {
+                        operands[OperandType.RISE] = validInput
+                        numbers[OperandType.RISE] = validInput
+                    }
                 }
             )
             InfoTileButton(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 operandType = OperandType.RUN,
                 validateFunction = { input ->
-                    if (input == "")
+                    if (input == null)
                         ""
-                    else if (Deci(input) < Deci.ZERO)
+                    else if (input < Deci.ZERO)
                         "Run be greater than 0"
-                    else if (programState.operands[OperandType.DIAGONAL] != null && Deci(programState.diagonalText) < Deci(input))
+                    else if (
+                        run {
+                            val diagonal = operands[OperandType.DIAGONAL]
+                            diagonal?.let { diagonal <= input }?: false
+                        })
                         "Run must be less than the diagonal"
                     else ""
                 },
                 validInputFunction = { validInput ->
-                    programState.runText = validInput
-                    if (validInput == "")
-                        programState.operands.remove(OperandType.RUN)
-                    else
-                        programState.operands[OperandType.RUN] = RightTriangle.Operand.Run(
-                            ItemHandle<Length>(Length(Deci(validInput)))
-                        )
+                    if (validInput == null) {
+                        operands.remove(OperandType.RUN)
+                        numbers.remove(OperandType.RUN)
+                    } else {
+                        operands[OperandType.RUN] = validInput
+                        numbers[OperandType.RUN] = validInput
+                    }
                 }
             )
             InfoTileButton(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 operandType = OperandType.DIAGONAL,
                 validateFunction = { input ->
-                    if (input == "")
+                    if (input == null)
                         ""
-                    else if (Deci(input) < Deci.ZERO)
+                    else if (input < Deci.ZERO)
                         "Diagonal be greater than 0"
-                    else if (programState.operands[OperandType.RISE] != null && Deci(programState.riseText) > Deci(input))
+                    else if (
+                        run {
+                            val rise = operands[OperandType.RISE]
+                            rise?.let { rise >= input }?: false
+                        })
                         "Diagonal must be greater than the rise"
-                    else if (programState.operands[OperandType.RUN] != null && Deci(programState.runText) > Deci(input))
+                    else if (
+                        run {
+                            val run = operands[OperandType.RUN]
+                            run?.let { run >= input }?: false
+                        })
                         "Diagonal must be greater than the run"
                     else ""
                 },
                 validInputFunction = { validInput ->
-                    programState.diagonalText = validInput
-                    if (validInput == "")
-                        programState.operands.remove(OperandType.DIAGONAL)
-                    else
-                        programState.operands[OperandType.DIAGONAL] = RightTriangle.Operand.Diagonal(
-                            ItemHandle<Length>(Length(Deci(validInput)))
-                        )
+                    if (validInput == null) {
+                        operands.remove(OperandType.DIAGONAL)
+                        numbers.remove(OperandType.DIAGONAL)
+                    } else {
+                        operands[OperandType.DIAGONAL] = validInput
+                        numbers[OperandType.DIAGONAL] = validInput
+                    }
                 }
             )
             InfoTileButton(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 operandType = OperandType.TOP_ANGLE,
                 validateFunction = { input ->
-                    if (input == "")
+                    if (input == null)
                         ""
-                    else if (Deci(input) <= Deci.ZERO || Deci(input) >= Deci(90))
+                    else if (input <= Deci.ZERO || input >= Deci(90))
                         "Top angle must be greater than 0 and less than 90"
                     else ""
                 },
                 validInputFunction = { validInput ->
-                    programState.operands.remove(OperandType.BOTTOM_ANGLE)
-                    if (validInput == "") {
-                        programState.topAngleText = ""
-                        programState.bottomAngleText = ""
-                        programState.operands.remove(OperandType.TOP_ANGLE)
+                    operands.remove(OperandType.BOTTOM_ANGLE)
+                    numbers.remove(OperandType.BOTTOM_ANGLE)
+                    if (validInput == null) {
+                        operands.remove(OperandType.TOP_ANGLE)
+                        numbers.remove(OperandType.TOP_ANGLE)
                     } else {
-                        programState.topAngleText = validInput
-                        programState.bottomAngleText = Deci(90).minus(Deci(validInput)).toString()
-                        programState.operands[OperandType.TOP_ANGLE] = RightTriangle.Operand.TopAngle(
-                            ItemHandle<Angle>(Angle(Deci(validInput)))
-                        )
+                        operands[OperandType.TOP_ANGLE] = validInput
+                        numbers[OperandType.TOP_ANGLE] = validInput
+                        numbers[OperandType.BOTTOM_ANGLE] = Number(Deci(90).minus(validInput.toDeci()))
                     }
                 }
             )
@@ -204,24 +230,22 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 operandType = OperandType.BOTTOM_ANGLE,
                 validateFunction = { input ->
-                    if (input == "")
+                    if (input == null)
                         ""
-                    else if (Deci(input) <= Deci.ZERO || Deci(input) >= Deci(90))
+                    else if (input <= Deci.ZERO || input >= Deci(90))
                         "Bottom angle must be greater than 0 and less than 90"
                     else ""
                 },
                 validInputFunction = { validInput ->
-                    programState.operands.remove(OperandType.TOP_ANGLE)
-                    if (validInput == "") {
-                        programState.bottomAngleText = ""
-                        programState.topAngleText = ""
-                        programState.operands.remove(OperandType.BOTTOM_ANGLE)
+                    operands.remove(OperandType.TOP_ANGLE)
+                    numbers.remove(OperandType.TOP_ANGLE)
+                    if (validInput == null) {
+                        operands.remove(OperandType.BOTTOM_ANGLE)
+                        numbers.remove(OperandType.BOTTOM_ANGLE)
                     } else {
-                        programState.bottomAngleText = validInput
-                        programState.topAngleText = (Deci(90).minus(Deci(validInput))).toString()
-                        programState.operands[OperandType.BOTTOM_ANGLE] = RightTriangle.Operand.BottomAngle(
-                            ItemHandle<Angle>(Angle(Deci(validInput)))
-                        )
+                        operands[OperandType.BOTTOM_ANGLE] = validInput
+                        numbers[OperandType.BOTTOM_ANGLE] = validInput
+                        numbers[OperandType.TOP_ANGLE] = Number(Deci(90) - validInput.toDeci())
                     }
                 }
             )

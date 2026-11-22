@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 import com.burtwelding.fabapp.Calculator.convertDegreesToRadians
 import com.burtwelding.fabapp.Calculator.convertRadiansToDegrees
+import com.burtwelding.fabapp.OperandType
 import com.burtwelding.fabapp.storage.ItemHandle
 import deci.trig.acos
 import deci.trig.asin
@@ -32,14 +33,6 @@ class RightTriangle (val operand1: Operand,
         data class BottomAngle (val handle: ItemHandle<Angle>): Operand
     }
 
-    data class Calculation (
-        val rise: Length,
-        val run: Length,
-        val diagonal: Length,
-        val topAngle: Angle,
-        val bottomAngle: Angle
-    )
-
     init {
         require(operand1::class != operand2::class) { "Both operands are the same type! THE FUHHHHH" }
         if (operand1::class == Operand.TopAngle::class && operand2::class == Operand.BottomAngle::class)
@@ -48,14 +41,15 @@ class RightTriangle (val operand1: Operand,
             throw IllegalArgumentException("bruh both operands are angles! whaaaaat?")
     }
 
-    fun calculate () =
-        Calculation(
-            rise = getRise(),
-            run = getRun(),
-            diagonal = getDiagonal(),
-            topAngle = getTopAngle(),
-            bottomAngle = getBottomAngle()
-        )
+    fun calculate () = OperandType.entries.associateWith { operandType ->
+        when (operandType) {
+            OperandType.RISE -> getRise()
+            OperandType.RUN -> getRun()
+            OperandType.DIAGONAL -> getDiagonal()
+            OperandType.TOP_ANGLE -> getTopAngle()
+            OperandType.BOTTOM_ANGLE -> getBottomAngle()
+        }
+    }
 
     private fun getRise (): Length {
         if (operand1 is Operand.Rise) return operand1.handle.item

@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -27,6 +28,8 @@ import com.burtwelding.fabapp.ui.draw.NumpadInput
 import com.burtwelding.fabapp.ui.draw.right_triangle.RightTriangleCanvas
 import com.burtwelding.fabapp.ui.draw.right_triangle.RightTriangleInfoPanel
 import org.kimplify.deci.Deci
+import kotlin.collections.getValue
+import kotlin.collections.setValue
 
 enum class OperandType (val color: Color) {
     RISE (Color.Red.darken(0.7f)),
@@ -39,19 +42,11 @@ class RightTriangleResetter {
     var resetProgram by mutableIntStateOf(0)
 }
 class RightTriangleState {
-    var riseText by mutableStateOf("")
-    var runText by mutableStateOf("")
-    var diagonalText by mutableStateOf("")
-    var bottomAngleText by mutableStateOf("")
-    var topAngleText by mutableStateOf("")
     var rightTriangleCalculation by mutableStateOf(
         RightTriangle(
             operand1 = RightTriangle.Operand.Rise(ItemHandle<Length>(Length(Deci.ONE))),
             operand2 = RightTriangle.Operand.Run(ItemHandle<Length>(Length(Deci.ONE))),
         ).calculate()
-    )
-    val operands by mutableStateOf(
-        mutableMapOf<OperandType, RightTriangle.Operand>()
     )
 }
 @Composable

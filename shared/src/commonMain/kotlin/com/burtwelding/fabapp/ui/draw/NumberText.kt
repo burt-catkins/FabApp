@@ -1,24 +1,135 @@
 package com.burtwelding.fabapp.ui.draw
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.burtwelding.fabapp.Fraction
+import com.burtwelding.fabapp.ImperialFraction
+import com.burtwelding.fabapp.ImperialFractionalResult
 import com.burtwelding.fabapp.Number
+import com.burtwelding.fabapp.RoundResult
+import deci.trim
+import org.kimplify.deci.Deci
+import org.kimplify.deci.RoundingMode
 
 
 @Composable
-fun NumberText (decimal: String, numerator: String?, denominator: String?) {
+fun NumberText (decimal: String?,
+                numerator: String?,
+                denominator: String?,
+                modifier: Modifier) {
     // If numerator is null, don't draw a fraction
     // Else draw the line and if denominator is null, show the square char (until its set to a string)
     // The function assumes that if you don't want a fraction anymore, just set the numerator to null
     // If there is neither a decimal (empty string) nor a fraction, then just do an empty string
     //      The reason this isn't a 0 is that this may be used as a placeholder to await input
     //          We don't want this to be interpreted as an actual input of 0. 0 is 0. Nothing is nothing.
+    Row (
+        modifier = modifier
+    ) {
+        // Number
+        Text (
+            modifier = Modifier
+                .align(Alignment.CenterVertically),
+            text = decimal?.let{ if (decimal == "0" && numerator != null) "" else decimal }?: "",
+            fontSize = 40.sp
+        )
+        if (numerator != null) {
+            // Fraction
+            Column (
+                modifier = modifier
+                    .width(IntrinsicSize.Max),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Numerator
+                Text(
+                    text = numerator,
+                    fontSize = 20.sp
+                )
+                // Fraction line
+                Canvas (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                ) {
+                    drawLine(
+                        color = Color.Black,
+                        strokeWidth = 2.dp.toPx(),
+                        start = Offset(
+                            x = 0f,
+                            y = size.height / 2
+                        ),
+                        end = Offset(
+                            x = size.width,
+                            y = size.height / 2
+                        )
+                    )
+                }
+                // Denominator
+                Text(
+                    text = denominator?: "□",
+                    fontSize = 20.sp
+                )
+            }
+        }
+    }
 }
 
 @Composable
-fun NumberText (number: Number) {
+fun NumberText (number: Number?, modifier: Modifier) {
+    fun getFractionalNumber (decimal: Deci, denominator: ImperialFraction): ImperialFractionalResult {
+        // TODO: Implement unit conversion
+//        val inchesDecimal: Deci = when (decimal.displayUnits) {
+//            Imperial.INCH, null -> decimal.baseUnitDecimalValue
+//            Imperial.FOOT -> decimal.baseUnitDecimalValue.times(Deci(12))
+//            Imperial.YARD -> decimal.baseUnitDecimalValue.times(Deci(36))
+//            Metric.MILLIMETERS -> convertMetricToInches(decimal).baseUnitDecimalValue
+//            Metric.CENTIMETERS -> convertMetricToInches(decimal).baseUnitDecimalValue
+//            Metric.METERS -> convertMetricToInches(decimal).baseUnitDecimalValue
+//        }
+        val wholeInches = decimal.setScale(0, RoundingMode.DOWN)
+        val remainder = decimal.minus(wholeInches)
+        val numeratorDecimal = remainder.times(denominator.denominator)
+        val numeratorWhole = numeratorDecimal.setScale(0, RoundingMode.DOWN)
+        val numeratorRemainder = numeratorDecimal.minus(numeratorWhole)
+        val roundResult = when {
+            numeratorRemainder.isZero() -> RoundResult.EXACT
+            numeratorRemainder >= Deci("0.5") -> RoundResult.UP
+            else -> RoundResult.DOWN
+        }
+        val roundedNumerator = numeratorDecimal.setScale(0, RoundingMode.HALF_UP)
+        val roundedNumeratorRoundedToWholeNumber = roundedNumerator == denominator.denominator
+        val roundedNumeratorPotentiallyWrapped = if (roundedNumeratorRoundedToWholeNumber) Deci.ZERO else roundedNumerator
+        return ImperialFractionalResult(
+            inches = wholeInches + if (roundedNumeratorRoundedToWholeNumber) Deci.ONE else Deci.ZERO,
+            fraction = if (roundedNumeratorPotentiallyWrapped == Deci.ZERO) null else Fraction(
+                originalNumerator = roundedNumeratorPotentiallyWrapped,
+                originalDenominator = denominator.denominator
+            ),
+            roundResult = roundResult
+        )
+    }
+    val totalDecimal = number?.toDeci()
+    val newSimplifiedFraction = totalDecimal?.let { getFractionalNumber(
+        totalDecimal,
+        ImperialFraction.THIRTY_SECONDS
+    )}
     NumberText(
-        decimal = number.decimal.toString(),
-        numerator = number.fraction?.numerator?.toString(),
-        denominator = number.fraction?.denominator?.toString()
+        decimal = newSimplifiedFraction?.inches?.trim(3),
+        numerator = newSimplifiedFraction?.fraction?.numerator?.trim(3),
+        denominator = newSimplifiedFraction?.fraction?.denominator?.trim(3),
+        modifier = modifier
     )
 }

@@ -7,6 +7,6 @@ import androidx.compose.runtime.setValue
 class AppState {
     var currentProgram by mutableStateOf(Programs.RIGHT_TRIANGLE)
     var openNumpad by mutableStateOf(false)
-    var numpadOutputFunction by mutableStateOf<(String) -> Unit>({})
-    var numpadValidateFunction by mutableStateOf<(String) -> String>({""})
+    var numpadOutputFunction by mutableStateOf<(Number?) -> Unit>({})
+    var numpadValidateFunction by mutableStateOf<(Number?) -> String>({""})
 }

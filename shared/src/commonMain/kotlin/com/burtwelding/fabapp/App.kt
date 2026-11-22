@@ -28,6 +28,7 @@ import com.burtwelding.fabapp.ui.draw.ProgramPane
 @Preview
 fun App() {
 
+    // TODO: When anything inside this is changed, everything is redrawn! Mainly an issue for the Program Pane
     val appState by remember { mutableStateOf(AppState()) }
 
     Box(
@@ -71,7 +72,7 @@ fun App() {
                         Box (
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(4f)
+                                .weight(6f)
                                 .clickable {
                                     appState.openNumpad = false
                                 }
@@ -80,7 +81,7 @@ fun App() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Color(0.1f, 0.1f, 0.1f, 0.5f))
-                                .weight(6f)
+                                .weight(4.5f)
                         ) {
                             NumpadInput(appState)
                         }

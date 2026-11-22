@@ -4,20 +4,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.AbsoluteCutCornerShape
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.Button
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,26 +19,41 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.burtwelding.fabapp.AppState
+import com.burtwelding.fabapp.Fraction
 import com.burtwelding.fabapp.Number
 import org.kimplify.deci.Deci
+import org.kimplify.deci.exception.DeciException
+
+enum class BufferType {
+    NUMBER,
+    NUMERATOR,
+    DENOMINATOR
+}
+
+class Buffer {var buffer by mutableStateOf("")}
+
+class NumpadState {
+    var currentBufferSelected by mutableStateOf(BufferType.NUMBER)
+    var error by mutableStateOf("")
+    var numberBuffer by mutableStateOf(Buffer())
+    var numeratorBuffer by mutableStateOf<Buffer?>(null)
+    var denominatorBuffer by mutableStateOf<Buffer?>(null)
+}
 
 @Composable
 fun NumpadInput (
     appState: AppState
 ) {
-    var input by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf("") }
+    val numpadState by remember { mutableStateOf(NumpadState()) }
     @Composable
     fun Tile (
         modifier: Modifier,
-        function: () -> Unit,
+        functionWithCurrentBuffer: (Buffer?) -> Unit,
         text: String
     ) {
         Box(
@@ -56,7 +64,13 @@ fun NumpadInput (
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.LightGray)
-                    .clickable { function() }
+                    .clickable {functionWithCurrentBuffer(
+                        when (numpadState.currentBufferSelected) {
+                            BufferType.NUMBER -> numpadState.numberBuffer
+                            BufferType.NUMERATOR -> numpadState.numeratorBuffer
+                            BufferType.DENOMINATOR -> numpadState.denominatorBuffer
+                        }
+                    )}
             ) {
                 Text(
                     text = text,
@@ -72,7 +86,7 @@ fun NumpadInput (
             .fillMaxSize()
     ) {
         // Error Panel
-        if (error != "") {
+        if (numpadState.error != "") {
             Box (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -86,14 +100,14 @@ fun NumpadInput (
                     )
             ) {
                 Text(
-                    text = error,
+                    text = numpadState.error,
                     modifier = Modifier
                         .align(Alignment.Center),
                     fontSize = TextUnit(13f, TextUnitType.Sp)
                 )
             }
         }
-        // Text Panel
+        // Buffer Panel
         Box (
             modifier = Modifier
                 .fillMaxWidth()
@@ -106,10 +120,11 @@ fun NumpadInput (
                     )
                 )
         ) {
-            Text(
-                text = input,
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = TextUnit(25f, TextUnitType.Sp)
+            NumberText(
+                decimal = numpadState.numberBuffer.buffer,
+                numerator = numpadState.numeratorBuffer?.buffer,
+                denominator = numpadState.denominatorBuffer?.buffer,
+                modifier = Modifier.align(Alignment.Center)
             )
         }
         // Numpad, top 2
@@ -119,7 +134,12 @@ fun NumpadInput (
         ) {
             Tile(
                 modifier = Modifier.fillMaxHeight().weight(1f),
-                function = { input = "" },
+                functionWithCurrentBuffer = {
+                    numpadState.numberBuffer = Buffer()
+                    numpadState.numeratorBuffer = null
+                    numpadState.denominatorBuffer = null
+                    numpadState.currentBufferSelected = BufferType.NUMBER
+                },
                 text = "CLEAR"
             )
             Column (
@@ -128,12 +148,12 @@ fun NumpadInput (
 
                 Tile(
                     modifier = Modifier.weight(1f),
-                    function = { input += "7" },
+                    functionWithCurrentBuffer = { it?.buffer += "7" },
                     text = "7"
                 )
                 Tile(
                     modifier = Modifier.weight(1f),
-                    function = { input += "4" },
+                    functionWithCurrentBuffer = { it?.buffer += "4" },
                     text = "4"
                 )
             }
@@ -143,12 +163,12 @@ fun NumpadInput (
 
                 Tile(
                     modifier = Modifier.weight(1f),
-                    function = { input += "8" },
+                    functionWithCurrentBuffer = { it?.buffer += "8" },
                     text = "8"
                 )
                 Tile(
                     modifier = Modifier.weight(1f),
-                    function = { input += "5" },
+                    functionWithCurrentBuffer = { it?.buffer += "5" },
                     text = "5"
                 )
             }
@@ -158,30 +178,52 @@ fun NumpadInput (
 
                 Tile(
                     modifier = Modifier.weight(1f),
-                    function = { input += "9" },
+                    functionWithCurrentBuffer = { it?.buffer += "9" },
                     text = "9"
                 )
                 Tile(
                     modifier = Modifier.weight(1f),
-                    function = { input += "6" },
+                    functionWithCurrentBuffer = { it?.buffer += "6" },
                     text = "6"
                 )
             }
             Tile(
                 modifier = Modifier.fillMaxHeight().weight(1f),
-                function = {
-                    try {
-                        if (input != "") Deci(input)
-                        val validationTextResult = appState.numpadValidateFunction(input)
-                        if (validationTextResult == "") {
-                            appState.numpadOutputFunction(input)
-                            appState.openNumpad = false
-                        } else {
-                            error = validationTextResult
+                functionWithCurrentBuffer = {
+                    // First validate if buffers are valid as a group.
+                    if (numpadState.numeratorBuffer?.buffer == "" || numpadState.denominatorBuffer?.buffer == "" || (numpadState.numeratorBuffer != null && numpadState.denominatorBuffer == null)) {
+                        numpadState.error = "Finish fraction or clear it"
+                    } else {
+                        try {
+                            val number = if (numpadState.numberBuffer.buffer == "") null else Deci(
+                                numpadState.numberBuffer.buffer
+                            )
+                            val numerator = numpadState.numeratorBuffer?.let { Deci(it.buffer) }
+                            val denominator = numpadState.denominatorBuffer?.let { Deci(it.buffer) }
+                            val fraction = numerator?.let {
+                                denominator?.let {
+                                    Fraction(
+                                        numerator,
+                                        denominator
+                                    )
+                                }
+                            }
+                            val inputNumber = Number(number, fraction)
+                            val inputValidationResult = appState.numpadValidateFunction(inputNumber)
+                            if (inputValidationResult == "") {
+                                appState.numpadOutputFunction(inputNumber)
+                                appState.openNumpad = false
+                            } else {
+                                numpadState.error = inputValidationResult
+                            }
+                        } catch (bruh: Fraction.DivideByZero) {
+                            numpadState.error = "You cannot divide by zero"
+                        } catch (deciProblem: DeciException) {
+                            numpadState.error = "Enter a valid number"
+                        } catch (otherProblem: Exception) {
+                            otherProblem.printStackTrace()
+                            numpadState.error = "Something went wrong. Please close numpad and try again."
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        error = "Please enter a valid number"
                     }
                 },
                 text = "CONFIRM"
@@ -194,7 +236,9 @@ fun NumpadInput (
         ) {
             Tile(
                 modifier = Modifier.fillMaxHeight().weight(1f),
-                function = { input = input.dropLast(1) },
+                functionWithCurrentBuffer = {
+                    it?.buffer = it.buffer.dropLast(1)
+                },
                 text = "DELETE"
             )
             Column (
@@ -205,18 +249,18 @@ fun NumpadInput (
                 ) {
                     Tile(
                         modifier = Modifier.weight(1f),
-                        function = { input += "1" },
+                        functionWithCurrentBuffer = { it?.buffer += "1" },
                         text = "1"
                     )
                     Tile(
                         modifier = Modifier.weight(1f),
-                        function = { input += "2" },
+                        functionWithCurrentBuffer = { it?.buffer += "2" },
                         text = "2"
                     )
                 }
                 Tile(
                     modifier = Modifier.fillMaxWidth().weight(1f),
-                    function = { input += "0" },
+                    functionWithCurrentBuffer = { it?.buffer += "0" },
                     text = "0"
                 )
             }
@@ -226,19 +270,37 @@ fun NumpadInput (
 
                 Tile(
                     modifier = Modifier.weight(1f),
-                    function = { input += "3" },
+                    functionWithCurrentBuffer = { it?.buffer += "3" },
                     text = "3"
                 )
                 Tile(
                     modifier = Modifier.weight(1f),
-                    function = { input += "." },
+                    functionWithCurrentBuffer = { it?.buffer += "." },
                     text = "."
                 )
             }
             Tile(
                 modifier = Modifier.fillMaxHeight().weight(1f),
-                function = { },
-                text = "Fraction"
+                functionWithCurrentBuffer = { currentBuffer ->
+                    numpadState.currentBufferSelected = when (numpadState.currentBufferSelected) {
+                        BufferType.NUMBER -> BufferType.NUMERATOR
+                        BufferType.NUMERATOR -> {
+                            if (currentBuffer?.buffer == "")
+                                BufferType.NUMBER
+                            else BufferType.DENOMINATOR
+                        }
+                        BufferType.DENOMINATOR -> BufferType.NUMBER
+                    }
+                    when (numpadState.currentBufferSelected) {
+                        BufferType.NUMBER -> {
+                            numpadState.numeratorBuffer = null
+                            numpadState.denominatorBuffer = null
+                        }
+                        BufferType.NUMERATOR -> numpadState.numeratorBuffer = Buffer()
+                        BufferType.DENOMINATOR -> numpadState.denominatorBuffer = Buffer()
+                    }
+                },
+                text = "FRACTION"
             )
         }
     }

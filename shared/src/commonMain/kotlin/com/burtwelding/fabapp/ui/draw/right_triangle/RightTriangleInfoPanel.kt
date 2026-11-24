@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.Fraction
@@ -132,7 +133,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                     ) {
                         Text(
                             text = operandType.name.replace('_', ' '),
-                            fontSize = 12.sp,
+                            fontSize = 25.sp,
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                             color = Color.White
                         )
@@ -157,9 +158,10 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                         NumberText(
                             number = numbers[operandType],
                             modifier = Modifier
-                                .align(Alignment.CenterHorizontally),
+                                .align(Alignment.CenterHorizontally)
+                                .fillMaxHeight(),
                             fontColor = Color.White,
-                            fontSizeSP = 18,
+                            fontSizeSP = 40,
                             maxDenominator = when (operandType) {
                                 OperandType.RISE, OperandType.RUN, OperandType.DIAGONAL -> programPersist.maxDenominator.denominator
                                 OperandType.TOP_ANGLE, OperandType.BOTTOM_ANGLE -> null
@@ -194,7 +196,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                         modifier = modifier,
                         text = "RESET",
                         color = Color.LightGray,
-                        fontSize = 20.sp
+                        fontSize = 30.sp
                     )
                 }
             )
@@ -218,14 +220,14 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                             modifier = modifier,
                             text = "WHOLE",
                             color = Color.Black,
-                            fontSize = 20.sp
+                            fontSize = 30.sp
                         )
                     } else {
                         NumberText(
                             Number(null, Fraction(Deci.ONE, programPersist.maxDenominator.denominator)),
                             modifier = modifier,
                             fontColor = Color.Black,
-                            fontSizeSP = 40,
+                            fontSizeSP = 70,
                             maxDenominator = programPersist.maxDenominator.denominator
                         )
                     }

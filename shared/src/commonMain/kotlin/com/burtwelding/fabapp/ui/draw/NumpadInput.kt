@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.Fraction
 import com.burtwelding.fabapp.Number
@@ -132,7 +133,7 @@ fun NumpadInput (
                         text = "$numberChar",
                         modifier = Modifier
                             .align(Alignment.Center),
-                        fontSize = TextUnit(24f, TextUnitType.Sp)
+                        fontSize = 40.sp
                     )
                 }
             }
@@ -164,7 +165,7 @@ fun NumpadInput (
                         text = numpadState.error,
                         modifier = Modifier
                             .align(Alignment.Center),
-                        fontSize = TextUnit(13f, TextUnitType.Sp)
+                        fontSize = 24.sp
                     )
                 }
             }
@@ -188,7 +189,7 @@ fun NumpadInput (
                 denominator = numpadState.denominatorBuffer?.buffer,
                 modifier = Modifier.align(Alignment.Center),
                 fontColor = Color.Black,
-                fontSizeSP = 30,
+                fontSizeSP = 50,
                 roundResult = RoundResult.EXACT
             )
         }

@@ -58,7 +58,9 @@ fun RightTriangleCanvas (
         )
         val topAngle = programState.rightTriangleCalculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("yo what??? the top angle null! how can I draw a top angle arc when its null! what the hell man!")
         val bottomAngle = programState.rightTriangleCalculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("bruh! the bottom angle null! i cant draw that shit! fix it!")
-        val lineThiccness = (2f + 4f * min(topAngle, bottomAngle) / 45).dp.toPx()
+        val lineThiccnessMinimum = 4f
+        val lineThiccnessMaximumScalar = 8f
+        val lineThiccness = (lineThiccnessMinimum + lineThiccnessMaximumScalar * min(topAngle, bottomAngle) / 45).dp.toPx()
         drawLine( // Run
             OperandType.RUN.color.darken(0.25f).gray(0.3f),
             squarePoint,

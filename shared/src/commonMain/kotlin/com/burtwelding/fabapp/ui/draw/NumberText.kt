@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -34,26 +35,28 @@ fun NumberText (decimal: String?,
                 modifier: Modifier,
                 fontColor: Color,
                 fontSizeSP: Int,
-                roundResult: RoundResult) {
+                roundResult: RoundResult?) {
     Row (
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy((fontSizeSP.toFloat() / 3.5).dp)
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy((fontSizeSP.toFloat() * 0.15).dp)
     ) {
         // Number
-        Text (
-            modifier = Modifier
-                .align(Alignment.CenterVertically),
-            text = decimal?.let{ if (decimal == "0" && numerator != null) "" else decimal }?: "",
-            fontSize = fontSizeSP.sp,
-            color = fontColor
-        )
+        if (decimal != null && (decimal != "0" || numerator == null))
+            Text (
+                text = decimal,
+                fontSize = fontSizeSP.sp,
+                color = fontColor
+            )
+        // Fraction
         if (numerator != null) {
-            Row (
-                horizontalArrangement = Arrangement.spacedBy((fontSizeSP.toFloat() / 3.5).dp)
-            ) {
-                // Fraction
+//            Row (
+//                modifier = Modifier
+//                    .align(Alignment.CenterVertically),
+//                horizontalArrangement = Arrangement.spacedBy((fontSizeSP.toFloat() / 3.5).dp)
+//            ) {
                 Column (
-                    modifier = modifier
+                    modifier = Modifier
                         .width(IntrinsicSize.Max),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -89,17 +92,18 @@ fun NumberText (decimal: String?,
                         color = fontColor
                     )
                 }
-                Text(
-                    text = when (roundResult) {
-                        RoundResult.UP -> "↑"
-                        RoundResult.DOWN -> "↓"
-                        RoundResult.EXACT -> ""
-                    },
-                    fontSize = 16.sp,
-                    color = fontColor
-                )
-            }
+//            }
         }
+        if (roundResult != null && roundResult != RoundResult.EXACT)
+            Text(
+                text = when (roundResult) {
+                    RoundResult.UP -> "↑"
+                    RoundResult.DOWN -> "↓"
+                },
+                fontSize = fontSizeSP.sp,
+                color = fontColor,
+                modifier = Modifier
+            )
     }
 }
 
@@ -110,8 +114,9 @@ fun NumberText (number: Number?,
                 fontSizeSP: Int,
                 maxDenominator: Deci?,
                 decimalPrecision: Int = 3) {
-    fun getFractionalNumber (decimal: Deci, denominator: Deci?): ImperialFractionalResult {
-        // TODO: Implement unit conversion
+    if (number != null) {
+        fun getFractionalNumber (decimal: Deci, denominator: Deci?): ImperialFractionalResult {
+            // TODO: Implement unit conversion
 //        val inchesDecimal: Deci = when (decimal.displayUnits) {
 //            Imperial.INCH, null -> decimal.baseUnitDecimalValue
 //            Imperial.FOOT -> decimal.baseUnitDecimalValue.times(Deci(12))
@@ -120,45 +125,58 @@ fun NumberText (number: Number?,
 //            Metric.CENTIMETERS -> convertMetricToInches(decimal).baseUnitDecimalValue
 //            Metric.METERS -> convertMetricToInches(decimal).baseUnitDecimalValue
 //        }
-        if (denominator == null) return ImperialFractionalResult(
-            inches = decimal,
-            fraction = null,
-            roundResult = RoundResult.EXACT
-        )
-        val wholeInches = decimal.setScale(0, RoundingMode.DOWN)
-        val remainder = decimal.minus(wholeInches)
-        val numeratorDecimal = remainder.times(denominator)
-        val numeratorWhole = numeratorDecimal.setScale(0, RoundingMode.DOWN)
-        val numeratorRemainder = numeratorDecimal.minus(numeratorWhole)
-        val roundResult = when {
-            numeratorRemainder.isZero() -> RoundResult.EXACT
-            numeratorRemainder >= Deci("0.5") -> RoundResult.UP
-            else -> RoundResult.DOWN
+            if (denominator == null) return ImperialFractionalResult(
+                inches = decimal,
+                fraction = null,
+                roundResult = RoundResult.EXACT
+            )
+            val wholeInches = decimal.setScale(0, RoundingMode.DOWN)
+            val remainder = decimal.minus(wholeInches)
+            val numeratorDecimal = remainder.times(denominator)
+            val numeratorWhole = numeratorDecimal.setScale(0, RoundingMode.DOWN)
+            val numeratorRemainder = numeratorDecimal.minus(numeratorWhole)
+            val roundResult = when {
+                numeratorRemainder.isZero() -> RoundResult.EXACT
+                numeratorRemainder >= Deci("0.5") -> RoundResult.UP
+                else -> RoundResult.DOWN
+            }
+            val roundedNumerator = numeratorDecimal.setScale(0, RoundingMode.HALF_UP)
+            val roundedNumeratorRoundedToWholeNumber = roundedNumerator == denominator
+            val roundedNumeratorPotentiallyWrapped = if (roundedNumeratorRoundedToWholeNumber) Deci.ZERO else roundedNumerator
+            return ImperialFractionalResult(
+                inches = wholeInches + if (roundedNumeratorRoundedToWholeNumber) Deci.ONE else Deci.ZERO,
+                fraction = if (roundedNumeratorPotentiallyWrapped == Deci.ZERO) null else Fraction(
+                    originalNumerator = roundedNumeratorPotentiallyWrapped,
+                    originalDenominator = denominator
+                ),
+                roundResult = roundResult
+            )
         }
-        val roundedNumerator = numeratorDecimal.setScale(0, RoundingMode.HALF_UP)
-        val roundedNumeratorRoundedToWholeNumber = roundedNumerator == denominator
-        val roundedNumeratorPotentiallyWrapped = if (roundedNumeratorRoundedToWholeNumber) Deci.ZERO else roundedNumerator
-        return ImperialFractionalResult(
-            inches = wholeInches + if (roundedNumeratorRoundedToWholeNumber) Deci.ONE else Deci.ZERO,
-            fraction = if (roundedNumeratorPotentiallyWrapped == Deci.ZERO) null else Fraction(
-                originalNumerator = roundedNumeratorPotentiallyWrapped,
-                originalDenominator = denominator
-            ),
-            roundResult = roundResult
-        )
+        if (maxDenominator == null)
+            NumberText(
+                decimal = number.toDeci().trim(decimalPrecision),
+                numerator = null,
+                denominator = null,
+                modifier = modifier,
+                fontColor = fontColor,
+                fontSizeSP = fontSizeSP,
+                roundResult = null
+            )
+        else {
+            val totalDecimal = number.toDeci()
+            val newSimplifiedFraction = getFractionalNumber(
+                totalDecimal,
+                maxDenominator
+            )
+            NumberText(
+                decimal = newSimplifiedFraction.inches.trim(decimalPrecision),
+                numerator = newSimplifiedFraction.fraction?.numerator?.trim(decimalPrecision),
+                denominator = newSimplifiedFraction.fraction?.denominator?.trim(decimalPrecision),
+                modifier = modifier,
+                fontColor = fontColor,
+                fontSizeSP = fontSizeSP,
+                roundResult = newSimplifiedFraction.roundResult
+            )
+        }
     }
-    val totalDecimal = number?.toDeci()
-    val newSimplifiedFraction = totalDecimal?.let { getFractionalNumber(
-        totalDecimal,
-        maxDenominator
-    )}
-    NumberText(
-        decimal = newSimplifiedFraction?.inches?.trim(decimalPrecision),
-        numerator = newSimplifiedFraction?.fraction?.numerator?.trim(decimalPrecision),
-        denominator = newSimplifiedFraction?.fraction?.denominator?.trim(decimalPrecision),
-        modifier = modifier,
-        fontColor = fontColor,
-        fontSizeSP = fontSizeSP,
-        roundResult = newSimplifiedFraction?.roundResult?: RoundResult.EXACT
-    )
 }

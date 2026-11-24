@@ -2,9 +2,13 @@ package com.burtwelding.fabapp.ui.draw
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.IconButton
@@ -27,27 +31,25 @@ fun ProgramPane (modifier: Modifier, appState: AppState) {
     fun ProgramButton (program: Programs,
                        icon: DrawableResource,
                        description: String) {
-        IconButton(
-            onClick = {
+        Box(
+            Modifier.clickable {
                 appState.openNumpad = false
                 appState.currentProgram = program
             },
-            modifier = Modifier.size(45.dp)
         ) {
             Image(
                 painter = painterResource(icon),
                 contentDescription = description,
-                modifier = Modifier.size(40.dp)
             )
         }
     }
+    val spacing = 10.dp
     Column (
         modifier = modifier
-            .background(Color.DarkGray)
-            .fillMaxHeight()
-            .padding(vertical = 10.dp),
+            .fillMaxSize()
+            .padding(spacing),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
         ProgramButton(
             program = Programs.RIGHT_TRIANGLE,

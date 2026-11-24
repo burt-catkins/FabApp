@@ -3,6 +3,7 @@ package com.burtwelding.fabapp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.burtwelding.fabapp.ui.draw.NumpadInput
 import com.burtwelding.fabapp.ui.draw.ProgramPane
@@ -27,68 +31,91 @@ import com.burtwelding.fabapp.ui.draw.ProgramPane
 @Composable
 @Preview
 fun App() {
-
     // TODO: When anything inside this is changed, everything is redrawn! Mainly an issue for the Program Pane
     val appState by remember { mutableStateOf(AppState()) }
-
-    Box(
+    BoxWithConstraints (
         modifier = Modifier
             .fillMaxSize()
             .safeDrawingPadding()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            ProgramPane(
-                appState = appState,
-                modifier = Modifier.fillMaxHeight().width(50.dp)
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0.1f,0.1f,0.1f))
+        val screenHeightPx = constraints.maxHeight
+//        val screenWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
+        if (screenHeightPx > 0f) {
+            val globalDensity = screenHeightPx / 1280f
+//            val globalDensityBasedOnWidth = screenWidthPx / 720f
+//            val globalDensity = minOf(globalDensityBasedOnWidth, globalDensityBasedOnHeight)
+            CompositionLocalProvider(
+                value = LocalDensity provides Density(
+                    density = globalDensity,
+                    fontScale = 1f
+                )
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clipToBounds()
-                        .padding(vertical = 10.dp)
-                ) { // clipToBounds makes it so that nothing can be drawn outside this box
-                    when (appState.currentProgram) {
-                        Programs.RIGHT_TRIANGLE -> RightTriangleProgram(appState)
-                        Programs.MITER -> MiterProgram()
-                    }
-                }
-                if (appState.openNumpad) {
-                    Column (
+                        .safeDrawingPadding()
+                ) {
+                    Row(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clickable( // This just makes it so that nothing can be clicked on the background, since tiles have spacing
-                                enabled = false,
-                                onClick = {}
-                            )
-                            .background(Color(0.1f, 0.1f, 0.1f, 0.5f))
                     ) {
-                        Box (
+                        ProgramPane(
+                            appState = appState,
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .background(Color.DarkGray)
+                                .fillMaxHeight()
                                 .weight(1f)
-                                .clickable {
-                                    appState.openNumpad = false
-                                }
                         )
-                        Box (
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1.3f)
+                                .fillMaxHeight()
+                                .weight(6f)
+                                .background(Color(0.1f, 0.1f, 0.1f))
                         ) {
-                            NumpadInput(appState)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clipToBounds()
+                                    .padding(vertical = 10.dp)
+                            ) { // clipToBounds makes it so that nothing can be drawn outside this box
+                                when (appState.currentProgram) {
+                                    Programs.RIGHT_TRIANGLE -> RightTriangleProgram(appState)
+                                    Programs.MITER -> MiterProgram()
+                                }
+                            }
+                            if (appState.openNumpad) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable( // This just makes it so that nothing can be clicked on the background, since tiles have spacing
+                                            enabled = false,
+                                            onClick = {}
+                                        )
+                                        .background(Color(0.1f, 0.1f, 0.1f, 0.5f))
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .weight(1f)
+                                            .clickable {
+                                                appState.openNumpad = false
+                                            }
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .weight(1.3f)
+                                    ) {
+                                        NumpadInput(appState)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
         }
+
     }
 
 }

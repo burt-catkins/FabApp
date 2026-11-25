@@ -24,18 +24,14 @@ import com.burtwelding.fabapp.ui.draw.ProgramPane
 @Composable
 @Preview
 fun App() {
-    // TODO: When anything inside this is changed, everything is redrawn! Mainly an issue for the Program Pane
     BoxWithConstraints (
         modifier = Modifier
             .fillMaxSize()
             .safeDrawingPadding()
     ) {
         val screenHeightPx = constraints.maxHeight
-//        val screenWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
         if (screenHeightPx > 0f) {
             val globalDensity = screenHeightPx / 1280f
-//            val globalDensityBasedOnWidth = screenWidthPx / 720f
-//            val globalDensity = minOf(globalDensityBasedOnWidth, globalDensityBasedOnHeight)
             CompositionLocalProvider(
                 value = LocalDensity provides Density(
                     density = globalDensity,
@@ -66,8 +62,7 @@ fun App() {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .clipToBounds() // clipToBounds makes it so that nothing can be drawn outside this box
-                                    .padding(vertical = 10.dp)
+                                    .clipToBounds()
                             ) {
                                 when (AppState.currentProgram) {
                                     Programs.RIGHT_TRIANGLE -> RightTriangleProgram()

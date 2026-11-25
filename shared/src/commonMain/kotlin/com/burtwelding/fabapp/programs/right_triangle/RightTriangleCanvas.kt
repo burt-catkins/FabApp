@@ -19,8 +19,8 @@ fun RightTriangleCanvas (
     Canvas (
         modifier = modifier
     ) {
-        val run = RightTriangleData.rightTriangleCalculation[OperandType.RUN]?.baseUnitDecimalValue?.toFloat()?: error("man i tried to like draw the run but its fugging null! what da hell!")
-        val rise = RightTriangleData.rightTriangleCalculation[OperandType.RISE]?.baseUnitDecimalValue?.toFloat()?: error("what goin on here man the fugging rise is null! im tryna draw it! bruh!")
+        val run = RightTriangleData.rightTriangleCalculation[OperandType.RUN]?.toFloat()?: error("man i tried to like draw the run but its fugging null! what da hell!")
+        val rise = RightTriangleData.rightTriangleCalculation[OperandType.RISE]?.toFloat()?: error("what goin on here man the fugging rise is null! im tryna draw it! bruh!")
         val canvasPadding = 0.8f
         val canvasRatio = size.height / size.width
         val triangleRatio = rise / run
@@ -49,8 +49,8 @@ fun RightTriangleCanvas (
             center.x - runScaled / 2,
             center.y - riseScaled / 2
         )
-        val topAngle = RightTriangleData.rightTriangleCalculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("yo what??? the top angle null! how can I draw a top angle arc when its null! what the hell man!")
-        val bottomAngle = RightTriangleData.rightTriangleCalculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("bruh! the bottom angle null! i cant draw that shit! fix it!")
+        val topAngle = RightTriangleData.rightTriangleCalculation[OperandType.TOP_ANGLE]?.toFloat()?: error("yo what??? the top angle null! how can I draw a top angle arc when its null! what the hell man!")
+        val bottomAngle = RightTriangleData.rightTriangleCalculation[OperandType.BOTTOM_ANGLE]?.toFloat()?: error("bruh! the bottom angle null! i cant draw that shit! fix it!")
         val lineThiccnessNormal = 15f
         val lineThiccnessSmallest = 5f
         val lineThiccness = (lineThiccnessSmallest + (lineThiccnessNormal - lineThiccnessSmallest) * (min(topAngle, bottomAngle) / 45.0)).dp.toPx() // (lineThiccnessMinimum + lineThiccnessMaximumScalar * min(topAngle, bottomAngle) / 45).dp.toPx()

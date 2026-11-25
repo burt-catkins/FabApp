@@ -26,10 +26,6 @@ import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.Fraction
 import com.burtwelding.fabapp.ImperialFraction
 import com.burtwelding.fabapp.darken
-import com.burtwelding.fabapp.item.Angle
-import com.burtwelding.fabapp.item.Length
-import com.burtwelding.fabapp.item.RightTriangle
-import com.burtwelding.fabapp.storage.ItemHandle
 import org.kimplify.deci.Deci
 import com.burtwelding.fabapp.Number
 import com.burtwelding.fabapp.gray
@@ -40,7 +36,6 @@ import com.burtwelding.fabapp.ui.draw.NumberText
 import fabapp.shared.generated.resources.Res
 import fabapp.shared.generated.resources.icon_reset
 import org.jetbrains.compose.resources.painterResource
-
 
 @Composable
 fun RightTriangleInfoPanel (
@@ -103,22 +98,37 @@ fun RightTriangleInfoPanel (
                                     val secondOperandType = operandKeys.last()
                                     fun getOperand (operandType: OperandType) =
                                         when (operandType) {
-                                            OperandType.RISE -> RightTriangle.Operand.Rise(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is rise but there aint no number"))))
-                                            OperandType.RUN -> RightTriangle.Operand.Run(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is run but there aint no number"))))
-                                            OperandType.DIAGONAL -> RightTriangle.Operand.Diagonal(ItemHandle<Length>(Length(operands[operandType]?.toDeci()?: error("bruh the operand type is diagonal but there aint no number"))))
-                                            OperandType.TOP_ANGLE -> RightTriangle.Operand.TopAngle(ItemHandle<Angle>(Angle(operands[operandType]?.toDeci()?: error("bruh the operand type is top angle but there aint no number"))))
-                                            OperandType.BOTTOM_ANGLE -> RightTriangle.Operand.BottomAngle(ItemHandle<Angle>(Angle(operands[operandType]?.toDeci()?: error("bruh the operand type is bottom angle but there aint no number"))))
+                                            OperandType.RISE -> RightTriangleCalculator.Rise(
+                                                operands[operandType]?.toDeci()
+                                                    ?: error("bruh the operand type is rise but there aint no number")
+                                            )
+                                            OperandType.RUN -> RightTriangleCalculator.Run(
+                                                operands[operandType]?.toDeci()
+                                                    ?: error("bruh the operand type is run but there aint no number")
+                                            )
+                                            OperandType.DIAGONAL -> RightTriangleCalculator.Diagonal(
+                                                operands[operandType]?.toDeci()
+                                                    ?: error("bruh the operand type is diagonal but there aint no number")
+                                            )
+                                            OperandType.TOP_ANGLE -> RightTriangleCalculator.TopAngle(
+                                                operands[operandType]?.toDeci()
+                                                    ?: error("bruh the operand type is top angle but there aint no number")
+                                            )
+                                            OperandType.BOTTOM_ANGLE -> RightTriangleCalculator.BottomAngle(
+                                                operands[operandType]?.toDeci()
+                                                    ?: error("bruh the operand type is bottom angle but there aint no number")
+                                            )
                                         }
-                                    val calculation = RightTriangle(
+                                    val calculation = RightTriangleCalculator(
                                         getOperand(firstOperandType),
                                         getOperand(secondOperandType)
                                     ).calculate()
                                     RightTriangleData.rightTriangleCalculation = calculation
-                                    numbers[OperandType.RISE] = Number(calculation[OperandType.RISE]?.baseUnitDecimalValue?: error("yoooooooo the rise calculation is null!!"))
-                                    numbers[OperandType.RUN] = Number(calculation[OperandType.RUN]?.baseUnitDecimalValue?: error("yoooooooo the RUN calculation is null!!"))
-                                    numbers[OperandType.DIAGONAL] = Number(calculation[OperandType.DIAGONAL]?.baseUnitDecimalValue?: error("yoooooooo the DIAGONAL calculation is null!!"))
-                                    numbers[OperandType.TOP_ANGLE] = Number(calculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?: error("yoooooooo the TOP_ANGLE calculation is null!!"))
-                                    numbers[OperandType.BOTTOM_ANGLE] = Number(calculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?: error("yoooooooo the BOTTOM_ANGLE calculation is null!!"))
+                                    numbers[OperandType.RISE] = Number(calculation[OperandType.RISE]?: error("yoooooooo the rise calculation is null!!"))
+                                    numbers[OperandType.RUN] = Number(calculation[OperandType.RUN]?: error("yoooooooo the RUN calculation is null!!"))
+                                    numbers[OperandType.DIAGONAL] = Number(calculation[OperandType.DIAGONAL]?: error("yoooooooo the DIAGONAL calculation is null!!"))
+                                    numbers[OperandType.TOP_ANGLE] = Number(calculation[OperandType.TOP_ANGLE]?: error("yoooooooo the TOP_ANGLE calculation is null!!"))
+                                    numbers[OperandType.BOTTOM_ANGLE] = Number(calculation[OperandType.BOTTOM_ANGLE]?: error("yoooooooo the BOTTOM_ANGLE calculation is null!!"))
                                 }
                             }
                             AppState.numpadValidateFunction = validateFunction
@@ -179,17 +189,18 @@ fun RightTriangleInfoPanel (
             }
         )
     }
+    val spacing = 10.dp
     Row (
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(spacing),
+        horizontalArrangement = Arrangement.spacedBy(spacing)
     ) {
         Column (
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(2f),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(spacing),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ActionButton(
@@ -242,7 +253,7 @@ fun RightTriangleInfoPanel (
         Column (
             modifier = Modifier
                 .fillMaxHeight().weight(5f),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(spacing)
         ) {
             InfoTileButton(
                 modifier = Modifier.fillMaxWidth().weight(1f),

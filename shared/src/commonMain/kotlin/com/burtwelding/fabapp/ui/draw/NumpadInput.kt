@@ -60,9 +60,7 @@ class NumpadState {
 }
 
 @Composable
-fun NumpadInput (
-    appState: AppState
-) {
+fun NumpadInput () {
     val numpadState by remember { mutableStateOf(NumpadState()) }
     fun getCurrentBuffer () = when (numpadState.currentBufferSelected) {
         BufferType.NUMBER -> numpadState.numberBuffer
@@ -154,7 +152,7 @@ fun NumpadInput (
                 .fillMaxWidth()
                 .weight(1f)
                 .clickable {
-                    appState.openNumpad = false
+                    AppState.openNumpad = false
                 }
         )
         Box(
@@ -295,10 +293,10 @@ fun NumpadInput (
                                             null
                                         else
                                             Number(number, fraction)
-                                    val inputValidationResult = appState.numpadValidateFunction(inputNumber)
+                                    val inputValidationResult = AppState.numpadValidateFunction(inputNumber)
                                     if (inputValidationResult == "") {
-                                        appState.numpadOutputFunction(inputNumber)
-                                        appState.openNumpad = false
+                                        AppState.numpadOutputFunction(inputNumber)
+                                        AppState.openNumpad = false
                                     } else {
                                         numpadState.error = inputValidationResult
                                     }

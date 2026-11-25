@@ -24,6 +24,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.burtwelding.fabapp.App
 import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.Fraction
 import com.burtwelding.fabapp.ImperialFraction
@@ -47,8 +48,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun RightTriangleInfoPanel (modifier: Modifier,
                             programState: RightTriangleState,
-                            programPersist: RightTrianglePersist,
-                            appState: AppState
+                            programPersist: RightTrianglePersist
 ) {
     val operands = remember { mutableStateMapOf<OperandType, Number>() }
     val numbers = remember { mutableStateMapOf<OperandType, Number>() }
@@ -102,7 +102,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                 Box(
                     modifier = modifier
                         .clickable (enabled = operands.size < 2) {
-                            appState.numpadOutputFunction = { validOutput ->
+                            AppState.numpadOutputFunction = { validOutput ->
                                 validInputFunction(validOutput)
                                 if (operands.size == 2) {
                                     val operandKeys = operands.keys
@@ -128,8 +128,8 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                                     numbers[OperandType.BOTTOM_ANGLE] = Number(calculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?: error("yoooooooo the BOTTOM_ANGLE calculation is null!!"))
                                 }
                             }
-                            appState.numpadValidateFunction = validateFunction
-                            appState.openNumpad = true
+                            AppState.numpadValidateFunction = validateFunction
+                            AppState.openNumpad = true
                         }
                 ) {
                     Column (

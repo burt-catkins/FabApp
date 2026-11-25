@@ -32,7 +32,6 @@ import com.burtwelding.fabapp.ui.draw.ProgramPane
 @Preview
 fun App() {
     // TODO: When anything inside this is changed, everything is redrawn! Mainly an issue for the Program Pane
-    val appState by remember { mutableStateOf(AppState()) }
     BoxWithConstraints (
         modifier = Modifier
             .fillMaxSize()
@@ -60,7 +59,6 @@ fun App() {
                             .fillMaxSize()
                     ) {
                         ProgramPane(
-                            appState = appState,
                             modifier = Modifier
                                 .background(Color.DarkGray)
                                 .fillMaxHeight()
@@ -78,13 +76,13 @@ fun App() {
                                     .clipToBounds() // clipToBounds makes it so that nothing can be drawn outside this box
                                     .padding(vertical = 10.dp)
                             ) {
-                                when (appState.currentProgram) {
-                                    Programs.RIGHT_TRIANGLE -> RightTriangleProgram(appState)
+                                when (AppState.currentProgram) {
+                                    Programs.RIGHT_TRIANGLE -> RightTriangleProgram()
                                     Programs.MITER -> MiterProgram()
                                 }
                             }
-                            if (appState.openNumpad) {
-                                NumpadInput(appState)
+                            if (AppState.openNumpad) {
+                                NumpadInput()
                             }
                         }
                     }

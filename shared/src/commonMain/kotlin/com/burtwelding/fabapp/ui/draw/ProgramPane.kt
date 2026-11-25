@@ -26,15 +26,15 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun ProgramPane (modifier: Modifier, appState: AppState) {
+fun ProgramPane (modifier: Modifier) {
     @Composable
     fun ProgramButton (program: Programs,
                        icon: DrawableResource,
                        description: String) {
         Box(
             Modifier.clickable {
-                appState.openNumpad = false
-                appState.currentProgram = program
+                AppState.openNumpad = false
+                AppState.currentProgram = program
             },
         ) {
             Image(

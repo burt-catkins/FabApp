@@ -39,7 +39,7 @@ class RightTriangleState {
     )
 }
 @Composable
-fun RightTriangleProgram (appState: AppState) {
+fun RightTriangleProgram () {
     val persist by remember { mutableStateOf(RightTrianglePersist()) }
     key(persist.resetProgram) { // there is some complicated reason why this is called key, but basically once this key changes, everything in the body starts over
         val programState = RightTriangleState()
@@ -58,8 +58,7 @@ fun RightTriangleProgram (appState: AppState) {
                     .fillMaxWidth()
                     .weight(1.5f),
                 programPersist = persist,
-                programState = programState,
-                appState = appState
+                programState = programState
             )
         }
     }

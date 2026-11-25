@@ -64,6 +64,11 @@ fun NumpadInput (
     appState: AppState
 ) {
     val numpadState by remember { mutableStateOf(NumpadState()) }
+    fun getCurrentBuffer () = when (numpadState.currentBufferSelected) {
+        BufferType.NUMBER -> numpadState.numberBuffer
+        BufferType.NUMERATOR -> numpadState.numeratorBuffer
+        BufferType.DENOMINATOR -> numpadState.denominatorBuffer
+    }
     @Composable
     fun Tile (
         modifier: Modifier,
@@ -80,11 +85,6 @@ fun NumpadInput (
                 subTile()
             }
         }
-    }
-    fun getCurrentBuffer () = when (numpadState.currentBufferSelected) {
-        BufferType.NUMBER -> numpadState.numberBuffer
-        BufferType.NUMERATOR -> numpadState.numeratorBuffer
-        BufferType.DENOMINATOR -> numpadState.denominatorBuffer
     }
     @Composable
     fun ActionTile (
@@ -133,27 +133,72 @@ fun NumpadInput (
                         text = "$numberChar",
                         modifier = Modifier
                             .align(Alignment.Center),
-                        fontSize = 40.sp
+                        fontSize = 60.sp
                     )
                 }
             }
         )
     }
-    Column (
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
+            .clickable( // This just makes it so that nothing can be clicked on the background, since program tiles have spacing
+                enabled = false,
+                onClick = {}
+            )
+            .background(Color(0.1f, 0.1f, 0.1f, 0.8f))
     ) {
-        Box (
+        Box(
             modifier = Modifier
-                .weight(0.5f)
                 .fillMaxWidth()
+                .weight(1f)
+                .clickable {
+                    appState.openNumpad = false
+                }
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(2f)
         ) {
-            // Error Panel
-            if (numpadState.error != "") {
+            Column (
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
                 Box (
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Red.darken(0.3f))
+                        .weight(0.5f)
+                        .fillMaxWidth()
+                ) {
+                    // Error Panel
+                    if (numpadState.error != "") {
+                        Box (
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Red.darken(0.3f))
+                                .border(
+                                    border = BorderStroke(
+                                        width = 5.dp,
+                                        color = Color.Black
+                                    )
+                                )
+                        ) {
+                            Text(
+                                text = numpadState.error,
+                                modifier = Modifier
+                                    .align(Alignment.Center),
+                                fontSize = 24.sp
+                            )
+                        }
+                    }
+                }
+                // Buffer Panel
+                Box (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .background(Color.LightGray)
                         .border(
                             border = BorderStroke(
                                 width = 5.dp,
@@ -161,215 +206,195 @@ fun NumpadInput (
                             )
                         )
                 ) {
-                    Text(
-                        text = numpadState.error,
-                        modifier = Modifier
-                            .align(Alignment.Center),
-                        fontSize = 24.sp
+                    NumberText(
+                        decimal = numpadState.numberBuffer.buffer,
+                        numerator = numpadState.numeratorBuffer?.buffer,
+                        denominator = numpadState.denominatorBuffer?.buffer,
+                        modifier = Modifier.align(Alignment.Center),
+                        fontColor = Color.Black,
+                        fontSizeHeightWeight = 0.5f,
+                        roundResult = RoundResult.EXACT
                     )
                 }
-            }
-        }
-        // Buffer Panel
-        Box (
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .background(Color.LightGray)
-                .border(
-                    border = BorderStroke(
-                        width = 5.dp,
-                        color = Color.Black
-                    )
-                )
-        ) {
-            NumberText(
-                decimal = numpadState.numberBuffer.buffer,
-                numerator = numpadState.numeratorBuffer?.buffer,
-                denominator = numpadState.denominatorBuffer?.buffer,
-                modifier = Modifier.align(Alignment.Center),
-                fontColor = Color.Black,
-                fontSizeSP = 50,
-                roundResult = RoundResult.EXACT
-            )
-        }
-        // Numpad, top 2
-        Row (modifier = Modifier
-            .fillMaxWidth()
-            .weight(2f)
-        ) {
-            ActionTile(
-                modifier = Modifier.fillMaxHeight().weight(1f),
-                action = {
-                    numpadState.numberBuffer = Buffer()
-                    numpadState.numeratorBuffer = null
-                    numpadState.denominatorBuffer = null
-                    numpadState.currentBufferSelected = BufferType.NUMBER
-                    numpadState.error = ""
-                },
-                icon = Res.drawable.icon_numpad_clear,
-                description = "Clear"
-            )
-            Column (
-                modifier = Modifier.fillMaxHeight().weight(1f)
-            ) {
-                NumberTile(
-                    modifier = Modifier.weight(1f),
-                    numberChar = '7'
-                )
-                NumberTile(
-                    modifier = Modifier.weight(1f),
-                    numberChar = '4'
-                )
-            }
-            Column (
-                modifier = Modifier.fillMaxHeight().weight(1f)
-            ) {
-                NumberTile(
-                    modifier = Modifier.weight(1f),
-                    numberChar = '8'
-                )
-                NumberTile(
-                    modifier = Modifier.weight(1f),
-                    numberChar = '5'
-                )
-            }
-            Column (
-                modifier = Modifier.fillMaxHeight().weight(1f)
-            ) {
-                NumberTile(
-                    modifier = Modifier.weight(1f),
-                    numberChar = '9'
-                )
-                NumberTile(
-                    modifier = Modifier.weight(1f),
-                    numberChar = '6'
-                )
-            }
-            ActionTile(
-                modifier = Modifier.fillMaxHeight().weight(1f),
-                action = {
-                    // First validate if buffers are valid as a group.
-                    if (numpadState.numeratorBuffer?.buffer == "" || numpadState.denominatorBuffer?.buffer == "" || (numpadState.numeratorBuffer != null && numpadState.denominatorBuffer == null)) {
-                        numpadState.error = "Finish fraction or clear it"
-                    } else {
-                        try {
-                            val number = if (numpadState.numberBuffer.buffer == "") null else Deci(
-                                numpadState.numberBuffer.buffer
-                            )
-                            val numerator = numpadState.numeratorBuffer?.let { Deci(it.buffer) }
-                            val denominator = numpadState.denominatorBuffer?.let { Deci(it.buffer) }
-                            val fraction = numerator?.let {
-                                denominator?.let {
-                                    Fraction(
-                                        numerator,
-                                        denominator
-                                    )
-                                }
-                            }
-                            val inputNumber =
-                                if (number == null && fraction == null)
-                                    null
-                                else
-                                    Number(number, fraction)
-                            val inputValidationResult = appState.numpadValidateFunction(inputNumber)
-                            if (inputValidationResult == "") {
-                                appState.numpadOutputFunction(inputNumber)
-                                appState.openNumpad = false
-                            } else {
-                                numpadState.error = inputValidationResult
-                            }
-                        } catch (bruh: Fraction.DivideByZero) {
-                            numpadState.error = "You cannot divide by zero"
-                        } catch (deciProblem: DeciException) {
-                            numpadState.error = "Enter a valid number"
-                        } catch (otherProblem: Exception) {
-                            otherProblem.printStackTrace()
-                            numpadState.error = "Something went wrong. Please close numpad and try again."
-                        }
-                    }
-                },
-                icon = Res.drawable.icon_numpad_confirm,
-                description = "Confirm"
-            )
-        }
-        // Numpad, bottom 2
-        Row (modifier = Modifier
-            .fillMaxWidth()
-            .weight(2f)
-        ) {
-            ActionTile(
-                modifier = Modifier.fillMaxHeight().weight(1f),
-                action = {
-                    val currentBuffer = getCurrentBuffer()
-                    currentBuffer?.buffer = currentBuffer.buffer.dropLast(1)
-                    numpadState.error = ""
-                },
-                icon = Res.drawable.icon_numpad_backspace,
-                description = "Backspace"
-            )
-            Column (
-                modifier = Modifier.fillMaxHeight().weight(2f)
-            ) {
-                Row (
-                    modifier = Modifier.fillMaxWidth().weight(1f)
+                // Numpad, top 2
+                Row (modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(2f)
                 ) {
-                    NumberTile(
-                        modifier = Modifier.weight(1f),
-                        numberChar = '1'
-                    )
-                    NumberTile(
-                        modifier = Modifier.weight(1f),
-                        numberChar = '2'
-                    )
-                }
-                NumberTile(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
-                    numberChar = '0'
-                )
-            }
-            Column (
-                modifier = Modifier.fillMaxHeight().weight(1f)
-            ) {
-
-                NumberTile(
-                    modifier = Modifier.weight(1f),
-                    numberChar = '3'
-                )
-                NumberTile(
-                    modifier = Modifier.weight(1f),
-                    numberChar = '.'
-                )
-            }
-            ActionTile(
-                modifier = Modifier.fillMaxHeight().weight(1f),
-                action = {
-                    numpadState.currentBufferSelected = when (numpadState.currentBufferSelected) {
-                        BufferType.NUMBER -> BufferType.NUMERATOR
-                        BufferType.NUMERATOR -> {
-                            if (getCurrentBuffer()?.buffer == "")
-                                BufferType.NUMBER
-                            else BufferType.DENOMINATOR
-                        }
-                        BufferType.DENOMINATOR -> BufferType.NUMBER
-                    }
-                    when (numpadState.currentBufferSelected) {
-                        BufferType.NUMBER -> {
+                    ActionTile(
+                        modifier = Modifier.fillMaxHeight().weight(1f),
+                        action = {
+                            numpadState.numberBuffer = Buffer()
                             numpadState.numeratorBuffer = null
                             numpadState.denominatorBuffer = null
-                        }
-                        BufferType.NUMERATOR -> numpadState.numeratorBuffer = Buffer()
-                        BufferType.DENOMINATOR -> numpadState.denominatorBuffer = Buffer()
+                            numpadState.currentBufferSelected = BufferType.NUMBER
+                            numpadState.error = ""
+                        },
+                        icon = Res.drawable.icon_numpad_clear,
+                        description = "Clear"
+                    )
+                    Column (
+                        modifier = Modifier.fillMaxHeight().weight(1f)
+                    ) {
+                        NumberTile(
+                            modifier = Modifier.weight(1f),
+                            numberChar = '7'
+                        )
+                        NumberTile(
+                            modifier = Modifier.weight(1f),
+                            numberChar = '4'
+                        )
                     }
-                    numpadState.error = ""
-                },
-                icon = when (numpadState.currentBufferSelected) {
-                    BufferType.NUMBER -> Res.drawable.icon_numpad_fraction_numerator
-                    BufferType.NUMERATOR -> if (numpadState.numeratorBuffer?.buffer == "") Res.drawable.icon_numpad_fraction_clear else Res.drawable.icon_numpad_fraction_denominator
-                    BufferType.DENOMINATOR -> Res.drawable.icon_numpad_fraction_clear
-                },
-                description = "Fraction"
-            )
+                    Column (
+                        modifier = Modifier.fillMaxHeight().weight(1f)
+                    ) {
+                        NumberTile(
+                            modifier = Modifier.weight(1f),
+                            numberChar = '8'
+                        )
+                        NumberTile(
+                            modifier = Modifier.weight(1f),
+                            numberChar = '5'
+                        )
+                    }
+                    Column (
+                        modifier = Modifier.fillMaxHeight().weight(1f)
+                    ) {
+                        NumberTile(
+                            modifier = Modifier.weight(1f),
+                            numberChar = '9'
+                        )
+                        NumberTile(
+                            modifier = Modifier.weight(1f),
+                            numberChar = '6'
+                        )
+                    }
+                    ActionTile(
+                        modifier = Modifier.fillMaxHeight().weight(1f),
+                        action = {
+                            // First validate if buffers are valid as a group.
+                            if (numpadState.numeratorBuffer?.buffer == "" || numpadState.denominatorBuffer?.buffer == "" || (numpadState.numeratorBuffer != null && numpadState.denominatorBuffer == null)) {
+                                numpadState.error = "Finish fraction or clear it"
+                            } else {
+                                try {
+                                    val number = if (numpadState.numberBuffer.buffer == "") null else Deci(
+                                        numpadState.numberBuffer.buffer
+                                    )
+                                    val numerator = numpadState.numeratorBuffer?.let { Deci(it.buffer) }
+                                    val denominator = numpadState.denominatorBuffer?.let { Deci(it.buffer) }
+                                    val fraction = numerator?.let {
+                                        denominator?.let {
+                                            Fraction(
+                                                numerator,
+                                                denominator
+                                            )
+                                        }
+                                    }
+                                    val inputNumber =
+                                        if (number == null && fraction == null)
+                                            null
+                                        else
+                                            Number(number, fraction)
+                                    val inputValidationResult = appState.numpadValidateFunction(inputNumber)
+                                    if (inputValidationResult == "") {
+                                        appState.numpadOutputFunction(inputNumber)
+                                        appState.openNumpad = false
+                                    } else {
+                                        numpadState.error = inputValidationResult
+                                    }
+                                } catch (bruh: Fraction.DivideByZero) {
+                                    numpadState.error = "You cannot divide by zero"
+                                } catch (deciProblem: DeciException) {
+                                    numpadState.error = "Enter a valid number"
+                                } catch (otherProblem: Exception) {
+                                    otherProblem.printStackTrace()
+                                    numpadState.error = "Something went wrong. Please close numpad and try again."
+                                }
+                            }
+                        },
+                        icon = Res.drawable.icon_numpad_confirm,
+                        description = "Confirm"
+                    )
+                }
+                // Numpad, bottom 2
+                Row (modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(2f)
+                ) {
+                    ActionTile(
+                        modifier = Modifier.fillMaxHeight().weight(1f),
+                        action = {
+                            val currentBuffer = getCurrentBuffer()
+                            currentBuffer?.buffer = currentBuffer.buffer.dropLast(1)
+                            numpadState.error = ""
+                        },
+                        icon = Res.drawable.icon_numpad_backspace,
+                        description = "Backspace"
+                    )
+                    Column (
+                        modifier = Modifier.fillMaxHeight().weight(2f)
+                    ) {
+                        Row (
+                            modifier = Modifier.fillMaxWidth().weight(1f)
+                        ) {
+                            NumberTile(
+                                modifier = Modifier.weight(1f),
+                                numberChar = '1'
+                            )
+                            NumberTile(
+                                modifier = Modifier.weight(1f),
+                                numberChar = '2'
+                            )
+                        }
+                        NumberTile(
+                            modifier = Modifier.fillMaxWidth().weight(1f),
+                            numberChar = '0'
+                        )
+                    }
+                    Column (
+                        modifier = Modifier.fillMaxHeight().weight(1f)
+                    ) {
+
+                        NumberTile(
+                            modifier = Modifier.weight(1f),
+                            numberChar = '3'
+                        )
+                        NumberTile(
+                            modifier = Modifier.weight(1f),
+                            numberChar = '.'
+                        )
+                    }
+                    ActionTile(
+                        modifier = Modifier.fillMaxHeight().weight(1f),
+                        action = {
+                            numpadState.currentBufferSelected = when (numpadState.currentBufferSelected) {
+                                BufferType.NUMBER -> BufferType.NUMERATOR
+                                BufferType.NUMERATOR -> {
+                                    if (getCurrentBuffer()?.buffer == "")
+                                        BufferType.NUMBER
+                                    else BufferType.DENOMINATOR
+                                }
+                                BufferType.DENOMINATOR -> BufferType.NUMBER
+                            }
+                            when (numpadState.currentBufferSelected) {
+                                BufferType.NUMBER -> {
+                                    numpadState.numeratorBuffer = null
+                                    numpadState.denominatorBuffer = null
+                                }
+                                BufferType.NUMERATOR -> numpadState.numeratorBuffer = Buffer()
+                                BufferType.DENOMINATOR -> numpadState.denominatorBuffer = Buffer()
+                            }
+                            numpadState.error = ""
+                        },
+                        icon = when (numpadState.currentBufferSelected) {
+                            BufferType.NUMBER -> Res.drawable.icon_numpad_fraction_numerator
+                            BufferType.NUMERATOR -> if (numpadState.numeratorBuffer?.buffer == "") Res.drawable.icon_numpad_fraction_clear else Res.drawable.icon_numpad_fraction_denominator
+                            BufferType.DENOMINATOR -> Res.drawable.icon_numpad_fraction_clear
+                        },
+                        description = "Fraction"
+                    )
+                }
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.burtwelding.fabapp.ui.draw.right_triangle
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
@@ -21,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.Fraction
@@ -38,6 +39,9 @@ import org.kimplify.deci.Deci
 import com.burtwelding.fabapp.Number
 import com.burtwelding.fabapp.gray
 import com.burtwelding.fabapp.ui.draw.NumberText
+import fabapp.shared.generated.resources.Res
+import fabapp.shared.generated.resources.icon_reset
+import org.jetbrains.compose.resources.painterResource
 
 
 @Composable
@@ -67,7 +71,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
         modifier: Modifier,
         color: Color,
         action: () -> Unit,
-        centeredComposableText: @Composable (modifier: Modifier) -> Unit
+        centeredComposable: @Composable () -> Unit
     ) {
         Tile(
             modifier
@@ -75,9 +79,11 @@ fun RightTriangleInfoPanel (modifier: Modifier,
             color,
             subTile = {
                 Box (
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    centeredComposableText(Modifier.align(Alignment.Center))
+                    centeredComposable()
                 }
             }
         )
@@ -144,7 +150,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                         ) {
                             drawLine(
                                 color = Color.White,
-                                strokeWidth = 1.dp.toPx(),
+                                strokeWidth = 2.dp.toPx(),
                                 start = Offset(
                                     x = size.width * 1 / 10,
                                     y = 0f
@@ -161,7 +167,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                                 .align(Alignment.CenterHorizontally)
                                 .fillMaxHeight(),
                             fontColor = Color.White,
-                            fontSizeSP = 40,
+                            fontSizeHeightWeight = 0.75f,
                             maxDenominator = when (operandType) {
                                 OperandType.RISE, OperandType.RUN, OperandType.DIAGONAL -> programPersist.maxDenominator.denominator
                                 OperandType.TOP_ANGLE, OperandType.BOTTOM_ANGLE -> null
@@ -183,27 +189,26 @@ fun RightTriangleInfoPanel (modifier: Modifier,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(2f),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ActionButton(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
+                    .weight(1f),
                 color = Color.DarkGray.darken(0.2f),
                 action = { programPersist.resetProgram++ },
-                centeredComposableText = { modifier ->
-                    Text(
-                        modifier = modifier,
-                        text = "RESET",
-                        color = Color.LightGray,
-                        fontSize = 30.sp
+                centeredComposable = {
+                    Image(
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f),
+                        painter = painterResource(Res.drawable.icon_reset),
+                        contentDescription = "Reset"
                     )
                 }
             )
             ActionButton(
                 modifier = Modifier
-                    .weight(2f)
-                    .fillMaxWidth(),
+                    .weight(2f),
                 color = Color.Gray.darken(0.2f),
                 action = { programPersist.maxDenominator = when (programPersist.maxDenominator) {
                     ImperialFraction.WHOLE -> ImperialFraction.SIXTY_FOURTHS
@@ -214,10 +219,9 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                     ImperialFraction.THIRTY_SECONDS -> ImperialFraction.SIXTEENTHS
                     ImperialFraction.SIXTY_FOURTHS -> ImperialFraction.THIRTY_SECONDS
                 } },
-                centeredComposableText = { modifier ->
+                centeredComposable = {
                     if (programPersist.maxDenominator == ImperialFraction.WHOLE) {
                         Text(
-                            modifier = modifier,
                             text = "WHOLE",
                             color = Color.Black,
                             fontSize = 30.sp
@@ -225,9 +229,10 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                     } else {
                         NumberText(
                             Number(null, Fraction(Deci.ONE, programPersist.maxDenominator.denominator)),
-                            modifier = modifier,
+                            modifier = Modifier
+                                .fillMaxHeight(0.3f),
                             fontColor = Color.Black,
-                            fontSizeSP = 70,
+                            fontSizeHeightWeight = 1f,
                             maxDenominator = programPersist.maxDenominator.denominator
                         )
                     }

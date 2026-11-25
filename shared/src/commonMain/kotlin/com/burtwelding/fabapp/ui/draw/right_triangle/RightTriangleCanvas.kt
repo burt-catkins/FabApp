@@ -58,9 +58,9 @@ fun RightTriangleCanvas (
         )
         val topAngle = programState.rightTriangleCalculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("yo what??? the top angle null! how can I draw a top angle arc when its null! what the hell man!")
         val bottomAngle = programState.rightTriangleCalculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("bruh! the bottom angle null! i cant draw that shit! fix it!")
-        val lineThiccnessMinimum = 4f
-        val lineThiccnessMaximumScalar = 8f
-        val lineThiccness = (lineThiccnessMinimum + lineThiccnessMaximumScalar * min(topAngle, bottomAngle) / 45).dp.toPx()
+        val lineThiccnessNormal = 15f
+        val lineThiccnessSmallest = 5f
+        val lineThiccness = (lineThiccnessSmallest + (lineThiccnessNormal - lineThiccnessSmallest) * (min(topAngle, bottomAngle) / 45.0)).dp.toPx() // (lineThiccnessMinimum + lineThiccnessMaximumScalar * min(topAngle, bottomAngle) / 45).dp.toPx()
         drawLine( // Run
             OperandType.RUN.color.darken(0.25f).gray(0.3f),
             squarePoint,
@@ -79,7 +79,9 @@ fun RightTriangleCanvas (
             topPoint,
             lineThiccness
         )
-        val bottomRadius = runScaled / 4
+        val smallestFractionOfLineForRadius = 5
+        val biggestFractionOfLineForRadius = 2
+        val bottomRadius = (runScaled / (biggestFractionOfLineForRadius + ((smallestFractionOfLineForRadius - biggestFractionOfLineForRadius) * (min(bottomAngle, topAngle) / 45))))
         val bottomArcPoint = Offset(
             bottomPoint.x - bottomRadius,
             bottomPoint.y - bottomRadius
@@ -93,7 +95,7 @@ fun RightTriangleCanvas (
             size = Size(bottomRadius * 2, bottomRadius * 2),
             style = Stroke(lineThiccness)
         )
-        val topRadius = riseScaled / 4
+        val topRadius = (riseScaled / (biggestFractionOfLineForRadius + ((smallestFractionOfLineForRadius - biggestFractionOfLineForRadius) * (min(bottomAngle, topAngle) / 45))))
         val topArcPoint = Offset(
             topPoint.x - topRadius,
             topPoint.y - topRadius

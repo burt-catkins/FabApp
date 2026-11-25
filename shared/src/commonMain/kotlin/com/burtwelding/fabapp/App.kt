@@ -75,40 +75,16 @@ fun App() {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .clipToBounds()
+                                    .clipToBounds() // clipToBounds makes it so that nothing can be drawn outside this box
                                     .padding(vertical = 10.dp)
-                            ) { // clipToBounds makes it so that nothing can be drawn outside this box
+                            ) {
                                 when (appState.currentProgram) {
                                     Programs.RIGHT_TRIANGLE -> RightTriangleProgram(appState)
                                     Programs.MITER -> MiterProgram()
                                 }
                             }
                             if (appState.openNumpad) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clickable( // This just makes it so that nothing can be clicked on the background, since tiles have spacing
-                                            enabled = false,
-                                            onClick = {}
-                                        )
-                                        .background(Color(0.1f, 0.1f, 0.1f, 0.5f))
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .weight(1f)
-                                            .clickable {
-                                                appState.openNumpad = false
-                                            }
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .weight(1.3f)
-                                    ) {
-                                        NumpadInput(appState)
-                                    }
-                                }
+                                NumpadInput(appState)
                             }
                         }
                     }

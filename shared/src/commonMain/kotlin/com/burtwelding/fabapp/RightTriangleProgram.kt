@@ -56,7 +56,7 @@ fun RightTriangleProgram (appState: AppState) {
             RightTriangleInfoPanel(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .weight(1.5f),
                 programPersist = persist,
                 programState = programState,
                 appState = appState

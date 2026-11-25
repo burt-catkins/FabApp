@@ -2,6 +2,8 @@ package com.burtwelding.fabapp.ui.draw
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -15,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,22 +37,24 @@ fun NumberText (decimal: String?,
                 denominator: String?,
                 modifier: Modifier,
                 fontColor: Color,
-                fontSizeSP: Int,
+                fontSizeHeightWeight: Float,
                 roundResult: RoundResult?) {
-    Row (
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy((fontSizeSP.toFloat() * 0.15).dp)
+    BoxWithConstraints (
+        modifier = modifier
     ) {
-        // Number
-        if (decimal != null && (decimal != "0" || numerator == null))
-            Text (
-                text = decimal,
-                fontSize = fontSizeSP.sp,
-                color = fontColor
-            )
-        // Fraction
-        if (numerator != null) {
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy((maxHeight.value * 0.15).dp)
+        ) {
+            // Number
+            if (decimal != null && (decimal != "0" || numerator == null))
+                Text (
+                    text = decimal,
+                    fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight,
+                    color = fontColor
+                )
+            // Fraction
+            if (numerator != null) {
 //            Row (
 //                modifier = Modifier
 //                    .align(Alignment.CenterVertically),
@@ -57,24 +62,31 @@ fun NumberText (decimal: String?,
 //            ) {
                 Column (
                     modifier = Modifier
-                        .width(IntrinsicSize.Max),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .width(IntrinsicSize.Max)
                 ) {
-                    // Numerator
-                    Text(
-                        text = if (numerator == "") "■" else numerator,
-                        fontSize = (fontSizeSP.toFloat() * 2 / 3).sp,
-                        color = fontColor
-                    )
+                    Box (
+                        modifier = Modifier
+                            .weight(0.45f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        // Numerator
+                        Text(
+                            text = if (numerator == "") "■" else numerator,
+                            fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.45f,
+                            color = fontColor,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                     // Fraction line
                     Canvas (
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(4.dp)
+                            .weight(0.1f)
                     ) {
                         drawLine(
                             color = fontColor,
-                            strokeWidth = 2.dp.toPx(),
+                            strokeWidth = ((this@BoxWithConstraints.maxHeight.value * 0.025).dp).toPx(),
                             start = Offset(
                                 x = 0f,
                                 y = size.height / 2
@@ -85,25 +97,33 @@ fun NumberText (decimal: String?,
                             )
                         )
                     }
-                    // Denominator
-                    Text(
-                        text = denominator?.let{ if (denominator == "") "■" else denominator }?: "□",
-                        fontSize = (fontSizeSP.toFloat() * 2 / 3).sp,
-                        color = fontColor
-                    )
+                    Box (
+                        modifier = Modifier
+                            .weight(0.45f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        // Denominator
+                        Text(
+                            text = denominator?.let{ if (denominator == "") "■" else denominator }?: "□",
+                            fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.45f,
+                            color = fontColor
+                        )
+                    }
                 }
 //            }
+            }
+            if (roundResult != null && roundResult != RoundResult.EXACT)
+                Text(
+                    text = when (roundResult) {
+                        RoundResult.UP -> "↑"
+                        RoundResult.DOWN -> "↓"
+                    },
+                    fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.5,
+                    color = fontColor,
+                    modifier = Modifier
+                )
         }
-        if (roundResult != null && roundResult != RoundResult.EXACT)
-            Text(
-                text = when (roundResult) {
-                    RoundResult.UP -> "↑"
-                    RoundResult.DOWN -> "↓"
-                },
-                fontSize = fontSizeSP.sp,
-                color = fontColor,
-                modifier = Modifier
-            )
     }
 }
 
@@ -111,7 +131,7 @@ fun NumberText (decimal: String?,
 fun NumberText (number: Number?,
                 modifier: Modifier,
                 fontColor: Color,
-                fontSizeSP: Int,
+                fontSizeHeightWeight: Float,
                 maxDenominator: Deci?,
                 decimalPrecision: Int = 3) {
     if (number != null) {
@@ -159,7 +179,7 @@ fun NumberText (number: Number?,
                 denominator = null,
                 modifier = modifier,
                 fontColor = fontColor,
-                fontSizeSP = fontSizeSP,
+                fontSizeHeightWeight = fontSizeHeightWeight,
                 roundResult = null
             )
         else {
@@ -174,7 +194,7 @@ fun NumberText (number: Number?,
                 denominator = newSimplifiedFraction.fraction?.denominator?.trim(decimalPrecision),
                 modifier = modifier,
                 fontColor = fontColor,
-                fontSizeSP = fontSizeSP,
+                fontSizeHeightWeight = fontSizeHeightWeight,
                 roundResult = newSimplifiedFraction.roundResult
             )
         }

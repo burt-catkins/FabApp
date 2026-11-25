@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -61,33 +62,19 @@ fun NumberText (decimal: String?,
 //                    .align(Alignment.CenterVertically),
 //                horizontalArrangement = Arrangement.spacedBy((fontSizeSP.toFloat() / 3.5).dp)
 //            ) {
-                Column (
+                Box (
                     modifier = Modifier
                         .width(IntrinsicSize.Max)
+                        .fillMaxHeight()
                 ) {
-                    Box (
-                        modifier = Modifier
-                            .weight(0.45f)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.BottomCenter
-                    ) {
-                        // Numerator
-                        Text(
-                            text = if (numerator == "") "■" else numerator,
-                            fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.45f,
-                            color = fontColor,
-                            textAlign = TextAlign.Center
-                        )
-                    }
                     // Fraction line
                     Canvas (
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(0.1f)
+                            .fillMaxSize()
                     ) {
                         drawLine(
                             color = fontColor,
-                            strokeWidth = ((this@BoxWithConstraints.maxHeight.value * 0.025).dp).toPx(),
+                            strokeWidth = this@BoxWithConstraints.maxHeight.value.sp.toPx() * fontSizeHeightWeight * 0.025f,
                             start = Offset(
                                 x = 0f,
                                 y = size.height / 2
@@ -98,18 +85,34 @@ fun NumberText (decimal: String?,
                             )
                         )
                     }
-                    Box (
-                        modifier = Modifier
-                            .weight(0.45f)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.TopCenter
-                    ) {
-                        // Denominator
-                        Text(
-                            text = denominator?.let{ if (denominator == "") "■" else denominator }?: "□",
-                            fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.45f,
-                            color = fontColor
-                        )
+                    Column {
+                        Box (
+                            modifier = Modifier
+                                .weight(0.5f)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            // Numerator
+                            Text(
+                                text = if (numerator == "") "■" else numerator,
+                                fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.475,
+                                color = fontColor,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Box (
+                            modifier = Modifier
+                                .weight(0.5f)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            // Denominator
+                            Text(
+                                text = denominator?.let{ if (denominator == "") "■" else denominator }?: "□",
+                                fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.475f,
+                                color = fontColor
+                            )
+                        }
                     }
                 }
 //            }

@@ -61,6 +61,36 @@ fun RightTriangleCanvas (
         val lineThiccnessNormal = 15f
         val lineThiccnessSmallest = 5f
         val lineThiccness = (lineThiccnessSmallest + (lineThiccnessNormal - lineThiccnessSmallest) * (min(topAngle, bottomAngle) / 45.0)).dp.toPx() // (lineThiccnessMinimum + lineThiccnessMaximumScalar * min(topAngle, bottomAngle) / 45).dp.toPx()
+        val smallestFractionOfLineForRadius = 5
+        val biggestFractionOfLineForRadius = 2
+        val bottomRadius = (runScaled / (biggestFractionOfLineForRadius + ((smallestFractionOfLineForRadius - biggestFractionOfLineForRadius) * (min(bottomAngle, topAngle) / 45))))
+        val bottomArcPoint = Offset(
+            bottomPoint.x - bottomRadius,
+            bottomPoint.y - bottomRadius
+        )
+        val topRadius = (riseScaled / (biggestFractionOfLineForRadius + ((smallestFractionOfLineForRadius - biggestFractionOfLineForRadius) * (min(bottomAngle, topAngle) / 45))))
+        val topArcPoint = Offset(
+            topPoint.x - topRadius,
+            topPoint.y - topRadius
+        )
+        drawArc(
+            color = OperandType.BOTTOM_ANGLE.color.darken(0.25f).gray(0.3f),
+            startAngle = -180f,
+            sweepAngle = bottomAngle,
+            useCenter = false,
+            topLeft = bottomArcPoint,
+            size = Size(bottomRadius * 2, bottomRadius * 2),
+            style = Stroke(lineThiccness)
+        )
+        drawArc(
+            color = OperandType.TOP_ANGLE.color.darken(0.25f).gray(0.3f),
+            startAngle = 90f,
+            sweepAngle = -topAngle,
+            useCenter = false,
+            topLeft = topArcPoint,
+            size = Size(topRadius * 2, topRadius * 2),
+            style = Stroke(lineThiccness)
+        )
         drawLine( // Run
             OperandType.RUN.color.darken(0.25f).gray(0.3f),
             squarePoint,
@@ -78,36 +108,6 @@ fun RightTriangleCanvas (
             bottomPoint,
             topPoint,
             lineThiccness
-        )
-        val smallestFractionOfLineForRadius = 5
-        val biggestFractionOfLineForRadius = 2
-        val bottomRadius = (runScaled / (biggestFractionOfLineForRadius + ((smallestFractionOfLineForRadius - biggestFractionOfLineForRadius) * (min(bottomAngle, topAngle) / 45))))
-        val bottomArcPoint = Offset(
-            bottomPoint.x - bottomRadius,
-            bottomPoint.y - bottomRadius
-        )
-        drawArc(
-            color = OperandType.BOTTOM_ANGLE.color.darken(0.25f).gray(0.3f),
-            startAngle = -180f,
-            sweepAngle = bottomAngle,
-            useCenter = false,
-            topLeft = bottomArcPoint,
-            size = Size(bottomRadius * 2, bottomRadius * 2),
-            style = Stroke(lineThiccness)
-        )
-        val topRadius = (riseScaled / (biggestFractionOfLineForRadius + ((smallestFractionOfLineForRadius - biggestFractionOfLineForRadius) * (min(bottomAngle, topAngle) / 45))))
-        val topArcPoint = Offset(
-            topPoint.x - topRadius,
-            topPoint.y - topRadius
-        )
-        drawArc(
-            color = OperandType.TOP_ANGLE.color.darken(0.25f).gray(0.3f),
-            startAngle = 90f,
-            sweepAngle = -topAngle,
-            useCenter = false,
-            topLeft = topArcPoint,
-            size = Size(topRadius * 2, topRadius * 2),
-            style = Stroke(lineThiccness)
         )
     }
 }

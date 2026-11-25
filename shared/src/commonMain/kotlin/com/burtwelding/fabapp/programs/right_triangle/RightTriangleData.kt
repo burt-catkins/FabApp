@@ -6,8 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.burtwelding.fabapp.ImperialFraction
 import com.burtwelding.fabapp.Number
-import com.burtwelding.fabapp.item.Length
-import com.burtwelding.fabapp.storage.ItemHandle
+import com.burtwelding.fabapp.numpad.NumpadData
 import org.kimplify.deci.Deci
 
 object RightTriangleData {
@@ -24,4 +23,5 @@ object RightTriangleData {
     )
     val operands = mutableStateMapOf<OperandType, Number>()
     val numbers = mutableStateMapOf<OperandType, Number>()
+    val numpadData by mutableStateOf(NumpadData())
 }

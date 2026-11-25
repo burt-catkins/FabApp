@@ -32,10 +32,7 @@ fun ProgramPane (modifier: Modifier) {
                        icon: DrawableResource,
                        description: String) {
         Box(
-            Modifier.clickable {
-                AppState.openNumpad = false
-                AppState.currentProgram = program
-            },
+            Modifier.clickable { AppState.currentProgram = program },
         ) {
             Image(
                 painter = painterResource(icon),

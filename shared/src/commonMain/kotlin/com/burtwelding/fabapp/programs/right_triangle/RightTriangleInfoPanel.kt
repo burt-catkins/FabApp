@@ -6,13 +6,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.Fraction
 import com.burtwelding.fabapp.ImperialFraction
 import com.burtwelding.fabapp.darken
@@ -38,9 +37,7 @@ import fabapp.shared.generated.resources.icon_reset
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun RightTriangleInfoPanel (
-    modifier: Modifier
-) {
+fun RightTriangleInfoPanel () {
     @Composable
     fun Tile (
         modifier: Modifier,
@@ -90,7 +87,7 @@ fun RightTriangleInfoPanel (
                 Box(
                     modifier = modifier
                         .clickable (enabled = operands.size < 2) {
-                            AppState.numpadOutputFunction = { validOutput ->
+                            RightTriangleData.numpadData.numpadOutputFunction = { validOutput ->
                                 validInputFunction(validOutput)
                                 if (operands.size == 2) {
                                     val operandKeys = operands.keys
@@ -131,15 +128,15 @@ fun RightTriangleInfoPanel (
                                     numbers[OperandType.BOTTOM_ANGLE] = Number(calculation[OperandType.BOTTOM_ANGLE]?: error("yoooooooo the BOTTOM_ANGLE calculation is null!!"))
                                 }
                             }
-                            AppState.numpadValidateFunction = validateFunction
-                            AppState.openNumpad = true
+                            RightTriangleData.numpadData.numpadValidateFunction = validateFunction
+                            RightTriangleData.numpadData.enabled = true
                         }
                 ) {
                     Column (
                         modifier = Modifier
                             .fillMaxSize()
                     ) {
-                        Box (
+                        BoxWithConstraints (
                             modifier = Modifier
                                 .fillMaxHeight(0.25f)
                                 .fillMaxWidth()
@@ -150,7 +147,7 @@ fun RightTriangleInfoPanel (
                                 textAlign = TextAlign.Center,
                                 text = operandType.name.replace('_', ' '),
                                 maxLines = 1,
-                                autoSize = TextAutoSize.StepBased(),
+                                fontSize = maxHeight.value.sp * 0.8f,
                                 color = Color.White
                             )
                         }
@@ -191,7 +188,7 @@ fun RightTriangleInfoPanel (
     }
     val spacing = 10.dp
     Row (
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(spacing),
         horizontalArrangement = Arrangement.spacedBy(spacing)

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
@@ -16,9 +15,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.dp
 import com.burtwelding.fabapp.programs.right_triangle.RightTriangleProgram
-import com.burtwelding.fabapp.ui.draw.NumpadInput
 import com.burtwelding.fabapp.ui.draw.ProgramPane
 
 @Composable
@@ -68,9 +65,6 @@ fun App() {
                                     Programs.RIGHT_TRIANGLE -> RightTriangleProgram()
                                     Programs.MITER -> MiterProgram()
                                 }
-                            }
-                            if (AppState.openNumpad) {
-                                NumpadInput()
                             }
                         }
                     }

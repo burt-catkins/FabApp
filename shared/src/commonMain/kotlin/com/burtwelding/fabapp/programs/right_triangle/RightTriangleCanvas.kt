@@ -1,6 +1,7 @@
 package com.burtwelding.fabapp.programs.right_triangle
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -13,11 +14,9 @@ import org.kimplify.deci.extension.toFloat
 import kotlin.math.min
 
 @Composable
-fun RightTriangleCanvas (
-    modifier: Modifier
-) {
+fun RightTriangleCanvas () {
     Canvas (
-        modifier = modifier
+        modifier = Modifier.fillMaxSize()
     ) {
         val run = RightTriangleData.rightTriangleCalculation[OperandType.RUN]?.toFloat()?: error("man i tried to like draw the run but its fugging null! what da hell!")
         val rise = RightTriangleData.rightTriangleCalculation[OperandType.RISE]?.toFloat()?: error("what goin on here man the fugging rise is null! im tryna draw it! bruh!")

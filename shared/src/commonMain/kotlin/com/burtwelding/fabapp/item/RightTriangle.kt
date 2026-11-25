@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 import com.burtwelding.fabapp.Calculator.convertDegreesToRadians
 import com.burtwelding.fabapp.Calculator.convertRadiansToDegrees
-import com.burtwelding.fabapp.OperandType
+import com.burtwelding.fabapp.programs.right_triangle.OperandType
 import com.burtwelding.fabapp.storage.ItemHandle
 import deci.trig.acos
 import deci.trig.asin

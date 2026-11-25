@@ -1,4 +1,4 @@
-package com.burtwelding.fabapp.ui.draw.right_triangle
+package com.burtwelding.fabapp.programs.right_triangle
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -11,14 +11,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -26,13 +22,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.burtwelding.fabapp.App
 import com.burtwelding.fabapp.AppState
 import com.burtwelding.fabapp.Fraction
 import com.burtwelding.fabapp.ImperialFraction
-import com.burtwelding.fabapp.OperandType
-import com.burtwelding.fabapp.RightTrianglePersist
-import com.burtwelding.fabapp.RightTriangleState
 import com.burtwelding.fabapp.darken
 import com.burtwelding.fabapp.item.Angle
 import com.burtwelding.fabapp.item.Length
@@ -41,6 +33,9 @@ import com.burtwelding.fabapp.storage.ItemHandle
 import org.kimplify.deci.Deci
 import com.burtwelding.fabapp.Number
 import com.burtwelding.fabapp.gray
+import com.burtwelding.fabapp.programs.right_triangle.RightTriangleData.maxDenominator
+import com.burtwelding.fabapp.programs.right_triangle.RightTriangleData.numbers
+import com.burtwelding.fabapp.programs.right_triangle.RightTriangleData.operands
 import com.burtwelding.fabapp.ui.draw.NumberText
 import fabapp.shared.generated.resources.Res
 import fabapp.shared.generated.resources.icon_reset
@@ -48,12 +43,9 @@ import org.jetbrains.compose.resources.painterResource
 
 
 @Composable
-fun RightTriangleInfoPanel (modifier: Modifier,
-                            programState: RightTriangleState,
-                            programPersist: RightTrianglePersist
+fun RightTriangleInfoPanel (
+    modifier: Modifier
 ) {
-    val operands = remember { mutableStateMapOf<OperandType, Number>() }
-    val numbers = remember { mutableStateMapOf<OperandType, Number>() }
     @Composable
     fun Tile (
         modifier: Modifier,
@@ -121,7 +113,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                                         getOperand(firstOperandType),
                                         getOperand(secondOperandType)
                                     ).calculate()
-                                    programState.rightTriangleCalculation = calculation
+                                    RightTriangleData.rightTriangleCalculation = calculation
                                     numbers[OperandType.RISE] = Number(calculation[OperandType.RISE]?.baseUnitDecimalValue?: error("yoooooooo the rise calculation is null!!"))
                                     numbers[OperandType.RUN] = Number(calculation[OperandType.RUN]?.baseUnitDecimalValue?: error("yoooooooo the RUN calculation is null!!"))
                                     numbers[OperandType.DIAGONAL] = Number(calculation[OperandType.DIAGONAL]?.baseUnitDecimalValue?: error("yoooooooo the DIAGONAL calculation is null!!"))
@@ -177,7 +169,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                             fontColor = Color.White,
                             fontSizeHeightWeight = 0.65f,
                             maxDenominator = when (operandType) {
-                                OperandType.RISE, OperandType.RUN, OperandType.DIAGONAL -> programPersist.maxDenominator.denominator
+                                OperandType.RISE, OperandType.RUN, OperandType.DIAGONAL -> maxDenominator.denominator
                                 OperandType.TOP_ANGLE, OperandType.BOTTOM_ANGLE -> null
                             },
                             decimalPrecision = 1
@@ -204,7 +196,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                 modifier = Modifier
                     .weight(1f),
                 color = Color.DarkGray.darken(0.2f),
-                action = { programPersist.resetProgram++ },
+                action = { RightTriangleData.reset() },
                 centeredComposable = {
                     Image(
                         modifier = Modifier
@@ -218,7 +210,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                 modifier = Modifier
                     .weight(2f),
                 color = Color.Gray.darken(0.2f),
-                action = { programPersist.maxDenominator = when (programPersist.maxDenominator) {
+                action = { maxDenominator = when (maxDenominator) {
                     ImperialFraction.WHOLE -> ImperialFraction.SIXTY_FOURTHS
                     ImperialFraction.HALVES -> ImperialFraction.WHOLE
                     ImperialFraction.QUARTERS -> ImperialFraction.HALVES
@@ -228,7 +220,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                     ImperialFraction.SIXTY_FOURTHS -> ImperialFraction.THIRTY_SECONDS
                 } },
                 centeredComposable = {
-                    if (programPersist.maxDenominator == ImperialFraction.WHOLE) {
+                    if (maxDenominator == ImperialFraction.WHOLE) {
                         Text(
                             text = "WHOLE",
                             color = Color.Black,
@@ -236,12 +228,12 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                         )
                     } else {
                         NumberText(
-                            Number(null, Fraction(Deci.ONE, programPersist.maxDenominator.denominator)),
+                            Number(null, Fraction(Deci.ONE, maxDenominator.denominator)),
                             modifier = Modifier
                                 .fillMaxHeight(0.3f),
                             fontColor = Color.Black,
                             fontSizeHeightWeight = 1f,
-                            maxDenominator = programPersist.maxDenominator.denominator
+                            maxDenominator = maxDenominator.denominator
                         )
                     }
                 }

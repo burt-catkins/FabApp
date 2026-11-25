@@ -1,33 +1,26 @@
-package com.burtwelding.fabapp.ui.draw.right_triangle
+package com.burtwelding.fabapp.programs.right_triangle
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawStyle
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.VectorProperty
 import androidx.compose.ui.unit.dp
-import com.burtwelding.fabapp.OperandType
-import com.burtwelding.fabapp.RightTriangleState
 import com.burtwelding.fabapp.darken
 import com.burtwelding.fabapp.gray
-import com.burtwelding.fabapp.item.RightTriangle
 import org.kimplify.deci.extension.toFloat
-import kotlin.math.max
 import kotlin.math.min
 
 @Composable
 fun RightTriangleCanvas (
-    modifier: Modifier,
-    programState: RightTriangleState
+    modifier: Modifier
 ) {
-    Canvas( modifier = modifier ) {
-        val run = programState.rightTriangleCalculation[OperandType.RUN]?.baseUnitDecimalValue?.toFloat()?: error("man i tried to like draw the run but its fugging null! what da hell!")
-        val rise = programState.rightTriangleCalculation[OperandType.RISE]?.baseUnitDecimalValue?.toFloat()?: error("what goin on here man the fugging rise is null! im tryna draw it! bruh!")
+    Canvas (
+        modifier = modifier
+    ) {
+        val run = RightTriangleData.rightTriangleCalculation[OperandType.RUN]?.baseUnitDecimalValue?.toFloat()?: error("man i tried to like draw the run but its fugging null! what da hell!")
+        val rise = RightTriangleData.rightTriangleCalculation[OperandType.RISE]?.baseUnitDecimalValue?.toFloat()?: error("what goin on here man the fugging rise is null! im tryna draw it! bruh!")
         val canvasPadding = 0.8f
         val canvasRatio = size.height / size.width
         val triangleRatio = rise / run
@@ -56,8 +49,8 @@ fun RightTriangleCanvas (
             center.x - runScaled / 2,
             center.y - riseScaled / 2
         )
-        val topAngle = programState.rightTriangleCalculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("yo what??? the top angle null! how can I draw a top angle arc when its null! what the hell man!")
-        val bottomAngle = programState.rightTriangleCalculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("bruh! the bottom angle null! i cant draw that shit! fix it!")
+        val topAngle = RightTriangleData.rightTriangleCalculation[OperandType.TOP_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("yo what??? the top angle null! how can I draw a top angle arc when its null! what the hell man!")
+        val bottomAngle = RightTriangleData.rightTriangleCalculation[OperandType.BOTTOM_ANGLE]?.baseUnitDecimalValue?.toFloat()?: error("bruh! the bottom angle null! i cant draw that shit! fix it!")
         val lineThiccnessNormal = 15f
         val lineThiccnessSmallest = 5f
         val lineThiccness = (lineThiccnessSmallest + (lineThiccnessNormal - lineThiccnessSmallest) * (min(topAngle, bottomAngle) / 45.0)).dp.toPx() // (lineThiccnessMinimum + lineThiccnessMaximumScalar * min(topAngle, bottomAngle) / 45).dp.toPx()

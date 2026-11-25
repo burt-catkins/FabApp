@@ -40,11 +40,12 @@ fun NumberText (decimal: String?,
                 fontSizeHeightWeight: Float,
                 roundResult: RoundResult?) {
     BoxWithConstraints (
-        modifier = modifier
+        modifier = modifier,
+        contentAlignment = Alignment.Center
     ) {
         Row (
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy((maxHeight.value * 0.15).dp)
+            horizontalArrangement = Arrangement.spacedBy((maxHeight.value * 0.08).dp)
         ) {
             // Number
             if (decimal != null && (decimal != "0" || numerator == null))
@@ -119,7 +120,7 @@ fun NumberText (decimal: String?,
                         RoundResult.UP -> "↑"
                         RoundResult.DOWN -> "↓"
                     },
-                    fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.5,
+                    fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.75,
                     color = fontColor,
                     modifier = Modifier
                 )

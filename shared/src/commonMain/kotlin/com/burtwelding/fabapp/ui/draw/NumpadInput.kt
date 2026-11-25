@@ -210,7 +210,7 @@ fun NumpadInput () {
                         denominator = numpadState.denominatorBuffer?.buffer,
                         modifier = Modifier.align(Alignment.Center),
                         fontColor = Color.Black,
-                        fontSizeHeightWeight = 0.5f,
+                        fontSizeHeightWeight = 0.65f,
                         roundResult = RoundResult.EXACT
                     )
                 }
@@ -220,7 +220,9 @@ fun NumpadInput () {
                     .weight(2f)
                 ) {
                     ActionTile(
-                        modifier = Modifier.fillMaxHeight().weight(1f),
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(1f),
                         action = {
                             numpadState.numberBuffer = Buffer()
                             numpadState.numeratorBuffer = null

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.burtwelding.fabapp.App
@@ -61,7 +63,6 @@ fun RightTriangleInfoPanel (modifier: Modifier,
         Box(
             modifier = modifier
                 .background(color)
-                .padding(5.dp)
         ) {
             subTile()
         }
@@ -134,19 +135,26 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                 ) {
                     Column (
                         modifier = Modifier
-                            .fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                            .fillMaxSize()
                     ) {
-                        Text(
-                            text = operandType.name.replace('_', ' '),
-                            fontSize = 25.sp,
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                            color = Color.White
-                        )
+                        Box (
+                            modifier = Modifier
+                                .fillMaxHeight(0.25f)
+                                .fillMaxWidth()
+                                .padding(2.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                textAlign = TextAlign.Center,
+                                text = operandType.name.replace('_', ' '),
+                                maxLines = 1,
+                                autoSize = TextAutoSize.StepBased(),
+                                color = Color.White
+                            )
+                        }
                         Canvas (
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(4.dp)
                         ) {
                             drawLine(
                                 color = Color.White,
@@ -167,7 +175,7 @@ fun RightTriangleInfoPanel (modifier: Modifier,
                                 .align(Alignment.CenterHorizontally)
                                 .fillMaxHeight(),
                             fontColor = Color.White,
-                            fontSizeHeightWeight = 0.75f,
+                            fontSizeHeightWeight = 0.65f,
                             maxDenominator = when (operandType) {
                                 OperandType.RISE, OperandType.RUN, OperandType.DIAGONAL -> programPersist.maxDenominator.denominator
                                 OperandType.TOP_ANGLE, OperandType.BOTTOM_ANGLE -> null

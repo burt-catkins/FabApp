@@ -229,10 +229,15 @@ fun RightTriangleInfoPanel () {
                 } },
                 centeredComposable = {
                     if (maxDenominator == ImperialFraction.WHOLE) {
-                        Text(
-                            text = "WHOLE",
-                            color = Color.Black,
-                            fontSize = 30.sp
+                        NumberText(
+                            decimal = null,
+                            numerator = "1",
+                            denominator = "1",
+                            modifier = Modifier
+                                .fillMaxHeight(0.3f),
+                            fontColor = Color.Black,
+                            fontSizeHeightWeight = 1f,
+                            roundResult = null
                         )
                     } else {
                         NumberText(

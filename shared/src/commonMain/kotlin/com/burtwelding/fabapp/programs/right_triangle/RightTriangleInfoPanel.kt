@@ -209,7 +209,7 @@ fun RightTriangleInfoPanel () {
             ActionButton(
                 modifier = Modifier
                     .weight(1f),
-                color = Color.DarkGray.darken(0.2f),
+                color = Color.Gray.darken(0.5f),
                 action = { RightTriangleData.reset() },
                 centeredComposable = {
                     Image(

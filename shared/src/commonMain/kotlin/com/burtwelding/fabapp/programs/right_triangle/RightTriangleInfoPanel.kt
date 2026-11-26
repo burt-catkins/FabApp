@@ -75,7 +75,7 @@ fun RightTriangleInfoPanel () {
     @Composable
     fun InfoTileButton (
         modifier: Modifier,
-        operandType: OperandType,
+        operandType: RightTriangleOperandType,
         validateFunction: (Number?) -> String,
         validInputFunction: (Number?) -> Unit
     ) {
@@ -92,25 +92,25 @@ fun RightTriangleInfoPanel () {
                                     val operandKeys = operands.keys
                                     val firstOperandType = operandKeys.first()
                                     val secondOperandType = operandKeys.last()
-                                    fun getOperand (operandType: OperandType) =
+                                    fun getOperand (operandType: RightTriangleOperandType) =
                                         when (operandType) {
-                                            OperandType.RISE -> RightTriangleCalculator.Rise(
+                                            RightTriangleOperandType.RISE -> RightTriangleCalculator.Rise(
                                                 operands[operandType]?.toDeci()
                                                     ?: error("bruh the operand type is rise but there aint no number")
                                             )
-                                            OperandType.RUN -> RightTriangleCalculator.Run(
+                                            RightTriangleOperandType.RUN -> RightTriangleCalculator.Run(
                                                 operands[operandType]?.toDeci()
                                                     ?: error("bruh the operand type is run but there aint no number")
                                             )
-                                            OperandType.DIAGONAL -> RightTriangleCalculator.Diagonal(
+                                            RightTriangleOperandType.DIAGONAL -> RightTriangleCalculator.Diagonal(
                                                 operands[operandType]?.toDeci()
                                                     ?: error("bruh the operand type is diagonal but there aint no number")
                                             )
-                                            OperandType.TOP_ANGLE -> RightTriangleCalculator.TopAngle(
+                                            RightTriangleOperandType.TOP_ANGLE -> RightTriangleCalculator.TopAngle(
                                                 operands[operandType]?.toDeci()
                                                     ?: error("bruh the operand type is top angle but there aint no number")
                                             )
-                                            OperandType.BOTTOM_ANGLE -> RightTriangleCalculator.BottomAngle(
+                                            RightTriangleOperandType.BOTTOM_ANGLE -> RightTriangleCalculator.BottomAngle(
                                                 operands[operandType]?.toDeci()
                                                     ?: error("bruh the operand type is bottom angle but there aint no number")
                                             )
@@ -120,11 +120,11 @@ fun RightTriangleInfoPanel () {
                                         getOperand(secondOperandType)
                                     ).calculate()
                                     RightTriangleData.rightTriangleCalculation = calculation
-                                    numbers[OperandType.RISE] = Number(calculation[OperandType.RISE]?: error("yoooooooo the rise calculation is null!!"))
-                                    numbers[OperandType.RUN] = Number(calculation[OperandType.RUN]?: error("yoooooooo the RUN calculation is null!!"))
-                                    numbers[OperandType.DIAGONAL] = Number(calculation[OperandType.DIAGONAL]?: error("yoooooooo the DIAGONAL calculation is null!!"))
-                                    numbers[OperandType.TOP_ANGLE] = Number(calculation[OperandType.TOP_ANGLE]?: error("yoooooooo the TOP_ANGLE calculation is null!!"))
-                                    numbers[OperandType.BOTTOM_ANGLE] = Number(calculation[OperandType.BOTTOM_ANGLE]?: error("yoooooooo the BOTTOM_ANGLE calculation is null!!"))
+                                    numbers[RightTriangleOperandType.RISE] = Number(calculation[RightTriangleOperandType.RISE]?: error("yoooooooo the rise calculation is null!!"))
+                                    numbers[RightTriangleOperandType.RUN] = Number(calculation[RightTriangleOperandType.RUN]?: error("yoooooooo the RUN calculation is null!!"))
+                                    numbers[RightTriangleOperandType.DIAGONAL] = Number(calculation[RightTriangleOperandType.DIAGONAL]?: error("yoooooooo the DIAGONAL calculation is null!!"))
+                                    numbers[RightTriangleOperandType.TOP_ANGLE] = Number(calculation[RightTriangleOperandType.TOP_ANGLE]?: error("yoooooooo the TOP_ANGLE calculation is null!!"))
+                                    numbers[RightTriangleOperandType.BOTTOM_ANGLE] = Number(calculation[RightTriangleOperandType.BOTTOM_ANGLE]?: error("yoooooooo the BOTTOM_ANGLE calculation is null!!"))
                                 }
                             }
                             RightTriangleData.numpadData.numpadValidateFunction = validateFunction
@@ -180,8 +180,8 @@ fun RightTriangleInfoPanel () {
                                     number = numbers[operandType],
                                     fontColor = Color.White,
                                     maxDenominator = when (operandType) {
-                                        OperandType.RISE, OperandType.RUN, OperandType.DIAGONAL -> maxDenominator.denominator
-                                        OperandType.TOP_ANGLE, OperandType.BOTTOM_ANGLE -> null
+                                        RightTriangleOperandType.RISE, RightTriangleOperandType.RUN, RightTriangleOperandType.DIAGONAL -> maxDenominator.denominator
+                                        RightTriangleOperandType.TOP_ANGLE, RightTriangleOperandType.BOTTOM_ANGLE -> null
                                     },
                                     decimalPrecision = 1
                                 )
@@ -265,7 +265,7 @@ fun RightTriangleInfoPanel () {
         ) {
             InfoTileButton(
                 modifier = Modifier.fillMaxWidth().weight(1f),
-                operandType = OperandType.RISE,
+                operandType = RightTriangleOperandType.RISE,
                 validateFunction = { input ->
                     if (input == null)
                         ""
@@ -273,7 +273,7 @@ fun RightTriangleInfoPanel () {
                         "Rise must be greater than 0"
                     else if (
                         run {
-                            val diagonal = operands[OperandType.DIAGONAL]
+                            val diagonal = operands[RightTriangleOperandType.DIAGONAL]
                             diagonal?.let { diagonal <= input }?: false
                         })
                         "Rise must be less than the diagonal"
@@ -281,17 +281,17 @@ fun RightTriangleInfoPanel () {
                 },
                 validInputFunction = { validInput ->
                     if (validInput == null) {
-                        operands.remove(OperandType.RISE)
-                        numbers.remove(OperandType.RISE)
+                        operands.remove(RightTriangleOperandType.RISE)
+                        numbers.remove(RightTriangleOperandType.RISE)
                     } else {
-                        operands[OperandType.RISE] = validInput
-                        numbers[OperandType.RISE] = validInput
+                        operands[RightTriangleOperandType.RISE] = validInput
+                        numbers[RightTriangleOperandType.RISE] = validInput
                     }
                 }
             )
             InfoTileButton(
                 modifier = Modifier.fillMaxWidth().weight(1f),
-                operandType = OperandType.RUN,
+                operandType = RightTriangleOperandType.RUN,
                 validateFunction = { input ->
                     if (input == null)
                         ""
@@ -299,7 +299,7 @@ fun RightTriangleInfoPanel () {
                         "Run must be greater than 0"
                     else if (
                         run {
-                            val diagonal = operands[OperandType.DIAGONAL]
+                            val diagonal = operands[RightTriangleOperandType.DIAGONAL]
                             diagonal?.let { diagonal <= input }?: false
                         })
                         "Run must be less than the diagonal"
@@ -307,17 +307,17 @@ fun RightTriangleInfoPanel () {
                 },
                 validInputFunction = { validInput ->
                     if (validInput == null) {
-                        operands.remove(OperandType.RUN)
-                        numbers.remove(OperandType.RUN)
+                        operands.remove(RightTriangleOperandType.RUN)
+                        numbers.remove(RightTriangleOperandType.RUN)
                     } else {
-                        operands[OperandType.RUN] = validInput
-                        numbers[OperandType.RUN] = validInput
+                        operands[RightTriangleOperandType.RUN] = validInput
+                        numbers[RightTriangleOperandType.RUN] = validInput
                     }
                 }
             )
             InfoTileButton(
                 modifier = Modifier.fillMaxWidth().weight(1f),
-                operandType = OperandType.DIAGONAL,
+                operandType = RightTriangleOperandType.DIAGONAL,
                 validateFunction = { input ->
                     if (input == null)
                         ""
@@ -325,13 +325,13 @@ fun RightTriangleInfoPanel () {
                         "Diagonal must be greater than 0"
                     else if (
                         run {
-                            val rise = operands[OperandType.RISE]
+                            val rise = operands[RightTriangleOperandType.RISE]
                             rise?.let { rise >= input }?: false
                         })
                         "Diagonal must be greater than the rise"
                     else if (
                         run {
-                            val run = operands[OperandType.RUN]
+                            val run = operands[RightTriangleOperandType.RUN]
                             run?.let { run >= input }?: false
                         })
                         "Diagonal must be greater than the run"
@@ -339,17 +339,17 @@ fun RightTriangleInfoPanel () {
                 },
                 validInputFunction = { validInput ->
                     if (validInput == null) {
-                        operands.remove(OperandType.DIAGONAL)
-                        numbers.remove(OperandType.DIAGONAL)
+                        operands.remove(RightTriangleOperandType.DIAGONAL)
+                        numbers.remove(RightTriangleOperandType.DIAGONAL)
                     } else {
-                        operands[OperandType.DIAGONAL] = validInput
-                        numbers[OperandType.DIAGONAL] = validInput
+                        operands[RightTriangleOperandType.DIAGONAL] = validInput
+                        numbers[RightTriangleOperandType.DIAGONAL] = validInput
                     }
                 }
             )
             InfoTileButton(
                 modifier = Modifier.fillMaxWidth().weight(1f),
-                operandType = OperandType.TOP_ANGLE,
+                operandType = RightTriangleOperandType.TOP_ANGLE,
                 validateFunction = { input ->
                     if (input == null)
                         ""
@@ -358,21 +358,21 @@ fun RightTriangleInfoPanel () {
                     else ""
                 },
                 validInputFunction = { validInput ->
-                    operands.remove(OperandType.BOTTOM_ANGLE)
-                    numbers.remove(OperandType.BOTTOM_ANGLE)
+                    operands.remove(RightTriangleOperandType.BOTTOM_ANGLE)
+                    numbers.remove(RightTriangleOperandType.BOTTOM_ANGLE)
                     if (validInput == null) {
-                        operands.remove(OperandType.TOP_ANGLE)
-                        numbers.remove(OperandType.TOP_ANGLE)
+                        operands.remove(RightTriangleOperandType.TOP_ANGLE)
+                        numbers.remove(RightTriangleOperandType.TOP_ANGLE)
                     } else {
-                        operands[OperandType.TOP_ANGLE] = validInput
-                        numbers[OperandType.TOP_ANGLE] = validInput
-                        numbers[OperandType.BOTTOM_ANGLE] = Number(Deci(90).minus(validInput.toDeci()))
+                        operands[RightTriangleOperandType.TOP_ANGLE] = validInput
+                        numbers[RightTriangleOperandType.TOP_ANGLE] = validInput
+                        numbers[RightTriangleOperandType.BOTTOM_ANGLE] = Number(Deci(90).minus(validInput.toDeci()))
                     }
                 }
             )
             InfoTileButton(
                 modifier = Modifier.fillMaxWidth().weight(1f),
-                operandType = OperandType.BOTTOM_ANGLE,
+                operandType = RightTriangleOperandType.BOTTOM_ANGLE,
                 validateFunction = { input ->
                     if (input == null)
                         ""
@@ -381,15 +381,15 @@ fun RightTriangleInfoPanel () {
                     else ""
                 },
                 validInputFunction = { validInput ->
-                    operands.remove(OperandType.TOP_ANGLE)
-                    numbers.remove(OperandType.TOP_ANGLE)
+                    operands.remove(RightTriangleOperandType.TOP_ANGLE)
+                    numbers.remove(RightTriangleOperandType.TOP_ANGLE)
                     if (validInput == null) {
-                        operands.remove(OperandType.BOTTOM_ANGLE)
-                        numbers.remove(OperandType.BOTTOM_ANGLE)
+                        operands.remove(RightTriangleOperandType.BOTTOM_ANGLE)
+                        numbers.remove(RightTriangleOperandType.BOTTOM_ANGLE)
                     } else {
-                        operands[OperandType.BOTTOM_ANGLE] = validInput
-                        numbers[OperandType.BOTTOM_ANGLE] = validInput
-                        numbers[OperandType.TOP_ANGLE] = Number(Deci(90) - validInput.toDeci())
+                        operands[RightTriangleOperandType.BOTTOM_ANGLE] = validInput
+                        numbers[RightTriangleOperandType.BOTTOM_ANGLE] = validInput
+                        numbers[RightTriangleOperandType.TOP_ANGLE] = Number(Deci(90) - validInput.toDeci())
                     }
                 }
             )

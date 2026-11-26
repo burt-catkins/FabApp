@@ -21,7 +21,7 @@ object RightTriangleData {
             operand2 = RightTriangleCalculator.Run(Deci.ONE),
         ).calculate()
     )
-    val operands = mutableStateMapOf<OperandType, Number>()
-    val numbers = mutableStateMapOf<OperandType, Number>()
+    val operands = mutableStateMapOf<RightTriangleOperandType, Number>()
+    val numbers = mutableStateMapOf<RightTriangleOperandType, Number>()
     val numpadData by mutableStateOf(NumpadData())
 }

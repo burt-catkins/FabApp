@@ -29,13 +29,13 @@ class RightTriangleCalculator (val operand1: Operand,
             throw IllegalArgumentException("bruh both operands are angles! whaaaaat?")
     }
 
-    fun calculate () = OperandType.entries.associateWith { operandType ->
+    fun calculate () = RightTriangleOperandType.entries.associateWith { operandType ->
         when (operandType) {
-            OperandType.RISE -> getRise()
-            OperandType.RUN -> getRun()
-            OperandType.DIAGONAL -> getDiagonal()
-            OperandType.TOP_ANGLE -> getTopAngle()
-            OperandType.BOTTOM_ANGLE -> getBottomAngle()
+            RightTriangleOperandType.RISE -> getRise()
+            RightTriangleOperandType.RUN -> getRun()
+            RightTriangleOperandType.DIAGONAL -> getDiagonal()
+            RightTriangleOperandType.TOP_ANGLE -> getTopAngle()
+            RightTriangleOperandType.BOTTOM_ANGLE -> getBottomAngle()
         }
     }
 

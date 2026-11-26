@@ -18,8 +18,8 @@ fun RightTriangleCanvas () {
     Canvas (
         modifier = Modifier.fillMaxSize()
     ) {
-        val run = RightTriangleData.rightTriangleCalculation[OperandType.RUN]?.toFloat()?: error("man i tried to like draw the run but its fugging null! what da hell!")
-        val rise = RightTriangleData.rightTriangleCalculation[OperandType.RISE]?.toFloat()?: error("what goin on here man the fugging rise is null! im tryna draw it! bruh!")
+        val run = RightTriangleData.rightTriangleCalculation[RightTriangleOperandType.RUN]?.toFloat()?: error("man i tried to like draw the run but its fugging null! what da hell!")
+        val rise = RightTriangleData.rightTriangleCalculation[RightTriangleOperandType.RISE]?.toFloat()?: error("what goin on here man the fugging rise is null! im tryna draw it! bruh!")
         val canvasPadding = 0.8f
         val canvasRatio = size.height / size.width
         val triangleRatio = rise / run
@@ -48,8 +48,8 @@ fun RightTriangleCanvas () {
             center.x - runScaled / 2,
             center.y - riseScaled / 2
         )
-        val topAngle = RightTriangleData.rightTriangleCalculation[OperandType.TOP_ANGLE]?.toFloat()?: error("yo what??? the top angle null! how can I draw a top angle arc when its null! what the hell man!")
-        val bottomAngle = RightTriangleData.rightTriangleCalculation[OperandType.BOTTOM_ANGLE]?.toFloat()?: error("bruh! the bottom angle null! i cant draw that shit! fix it!")
+        val topAngle = RightTriangleData.rightTriangleCalculation[RightTriangleOperandType.TOP_ANGLE]?.toFloat()?: error("yo what??? the top angle null! how can I draw a top angle arc when its null! what the hell man!")
+        val bottomAngle = RightTriangleData.rightTriangleCalculation[RightTriangleOperandType.BOTTOM_ANGLE]?.toFloat()?: error("bruh! the bottom angle null! i cant draw that shit! fix it!")
         val lineThiccnessNormal = 15f
         val lineThiccnessSmallest = 5f
         val lineThiccness = (lineThiccnessSmallest + (lineThiccnessNormal - lineThiccnessSmallest) * (min(topAngle, bottomAngle) / 45.0)).dp.toPx() // (lineThiccnessMinimum + lineThiccnessMaximumScalar * min(topAngle, bottomAngle) / 45).dp.toPx()
@@ -66,7 +66,7 @@ fun RightTriangleCanvas () {
             topPoint.y - topRadius
         )
         drawArc(
-            color = OperandType.BOTTOM_ANGLE.color.darken(0.25f).gray(0.3f),
+            color = RightTriangleOperandType.BOTTOM_ANGLE.color.darken(0.25f).gray(0.3f),
             startAngle = -180f,
             sweepAngle = bottomAngle,
             useCenter = false,
@@ -75,7 +75,7 @@ fun RightTriangleCanvas () {
             style = Stroke(lineThiccness)
         )
         drawArc(
-            color = OperandType.TOP_ANGLE.color.darken(0.25f).gray(0.3f),
+            color = RightTriangleOperandType.TOP_ANGLE.color.darken(0.25f).gray(0.3f),
             startAngle = 90f,
             sweepAngle = -topAngle,
             useCenter = false,
@@ -84,19 +84,19 @@ fun RightTriangleCanvas () {
             style = Stroke(lineThiccness)
         )
         drawLine( // Run
-            OperandType.RUN.color.darken(0.25f).gray(0.3f),
+            RightTriangleOperandType.RUN.color.darken(0.25f).gray(0.3f),
             squarePoint,
             bottomPoint,
             lineThiccness
         )
         drawLine( // Rise
-            OperandType.RISE.color.darken(0.25f).gray(0.3f),
+            RightTriangleOperandType.RISE.color.darken(0.25f).gray(0.3f),
             squarePoint,
             topPoint,
             lineThiccness
         )
         drawLine( // Diagonal
-            OperandType.DIAGONAL.color.darken(0.25f).gray(0.3f),
+            RightTriangleOperandType.DIAGONAL.color.darken(0.25f).gray(0.3f),
             bottomPoint,
             topPoint,
             lineThiccness

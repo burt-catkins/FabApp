@@ -158,7 +158,7 @@ fun Numpad (numpadData: NumpadData) {
                                     color = Color.Black
                                 )
                             )
-                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                            .padding(horizontal = 20.dp, vertical = 5.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -189,17 +189,21 @@ fun Numpad (numpadData: NumpadData) {
                                     width = 5.dp,
                                     color = Color.Black
                                 )
-                            )
+                            ),
+                        contentAlignment = Alignment.Center
                     ) {
-                        NumberText(
-                            decimal = numpadData.numberNumpadBuffer.buffer,
-                            numerator = numpadData.numeratorNumpadBuffer?.buffer,
-                            denominator = numpadData.denominatorNumpadBuffer?.buffer,
-                            modifier = Modifier.align(Alignment.Center),
-                            fontColor = Color.Black,
-                            fontSizeHeightWeight = 0.65f,
-                            roundResult = RoundResult.EXACT
-                        )
+                        Box (
+                            modifier = Modifier
+                                .fillMaxHeight(0.8f),
+                        ) {
+                            NumberText(
+                                decimal = numpadData.numberNumpadBuffer.buffer,
+                                numerator = numpadData.numeratorNumpadBuffer?.buffer,
+                                denominator = numpadData.denominatorNumpadBuffer?.buffer,
+                                fontColor = Color.Black,
+                                roundResult = RoundResult.EXACT
+                            )
+                        }
                     }
                     // Numpad, top 2
                     Row (modifier = Modifier

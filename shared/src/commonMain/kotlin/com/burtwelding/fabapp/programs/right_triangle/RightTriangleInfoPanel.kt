@@ -168,19 +168,25 @@ fun RightTriangleInfoPanel () {
                                 )
                             )
                         }
-                        NumberText(
-                            number = numbers[operandType],
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .fillMaxHeight(),
-                            fontColor = Color.White,
-                            fontSizeHeightWeight = 0.65f,
-                            maxDenominator = when (operandType) {
-                                OperandType.RISE, OperandType.RUN, OperandType.DIAGONAL -> maxDenominator.denominator
-                                OperandType.TOP_ANGLE, OperandType.BOTTOM_ANGLE -> null
-                            },
-                            decimalPrecision = 1
-                        )
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight(0.8f)
+                            ) {
+                                NumberText(
+                                    number = numbers[operandType],
+                                    fontColor = Color.White,
+                                    maxDenominator = when (operandType) {
+                                        OperandType.RISE, OperandType.RUN, OperandType.DIAGONAL -> maxDenominator.denominator
+                                        OperandType.TOP_ANGLE, OperandType.BOTTOM_ANGLE -> null
+                                    },
+                                    decimalPrecision = 1
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -228,26 +234,26 @@ fun RightTriangleInfoPanel () {
                     ImperialFraction.SIXTY_FOURTHS -> ImperialFraction.THIRTY_SECONDS
                 } },
                 centeredComposable = {
-                    if (maxDenominator == ImperialFraction.WHOLE) {
-                        NumberText(
-                            decimal = null,
-                            numerator = "1",
-                            denominator = "1",
-                            modifier = Modifier
-                                .fillMaxHeight(0.3f),
-                            fontColor = Color.Black,
-                            fontSizeHeightWeight = 1f,
-                            roundResult = null
-                        )
-                    } else {
-                        NumberText(
-                            Number(null, Fraction(Deci.ONE, maxDenominator.denominator)),
-                            modifier = Modifier
-                                .fillMaxHeight(0.3f),
-                            fontColor = Color.Black,
-                            fontSizeHeightWeight = 1f,
-                            maxDenominator = maxDenominator.denominator
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.3f)
+                    ) {
+                        if (maxDenominator == ImperialFraction.WHOLE) {
+                            NumberText(
+                                decimal = null,
+                                numerator = "1",
+                                denominator = "1",
+                                fontColor = Color.Black,
+                                roundResult = null
+                            )
+                        } else {
+                            NumberText(
+                                Number(null, Fraction(Deci.ONE, maxDenominator.denominator)),
+                                fontColor = Color.Black,
+                                maxDenominator = maxDenominator.denominator
+                            )
+                        }
                     }
                 }
             )

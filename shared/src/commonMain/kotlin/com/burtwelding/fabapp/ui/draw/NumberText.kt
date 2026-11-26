@@ -1,29 +1,27 @@
 package com.burtwelding.fabapp.ui.draw
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.burtwelding.fabapp.Fraction
-import com.burtwelding.fabapp.ImperialFraction
 import com.burtwelding.fabapp.ImperialFractionalResult
 import com.burtwelding.fabapp.Number
 import com.burtwelding.fabapp.RoundResult
@@ -36,15 +34,17 @@ import org.kimplify.deci.RoundingMode
 fun NumberText (decimal: String?,
                 numerator: String?,
                 denominator: String?,
-                modifier: Modifier,
                 fontColor: Color,
-                fontSizeHeightWeight: Float,
                 roundResult: RoundResult?) {
+    var numeratorWidthPx by remember { mutableFloatStateOf(0f) }
+    var denominatorWidthPx by remember { mutableFloatStateOf(0f) }
     BoxWithConstraints (
-        modifier = modifier,
+        modifier = Modifier
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Row (
+            modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy((maxHeight.value * 0.08).dp)
         ) {
@@ -52,70 +52,68 @@ fun NumberText (decimal: String?,
             if (decimal != null && (decimal != "0" || numerator == null))
                 Text (
                     text = decimal,
-                    fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight,
+                    autoSize = TextAutoSize.StepBased(),
+                    maxLines = 1,
                     color = fontColor
                 )
             // Fraction
             if (numerator != null) {
-//            Row (
-//                modifier = Modifier
-//                    .align(Alignment.CenterVertically),
-//                horizontalArrangement = Arrangement.spacedBy((fontSizeSP.toFloat() / 3.5).dp)
-//            ) {
-                Box (
+                Column (
                     modifier = Modifier
-                        .width(IntrinsicSize.Max)
-                        .fillMaxHeight()
+                        .drawWithContent {
+                            drawContent()
+                            val barWidth = maxOf(numeratorWidthPx, denominatorWidthPx)
+                            if (barWidth > 0f) {
+                                val strokePx = size.height * 0.05f
+                                val startX = (size.width - barWidth) / 2f
+                                drawLine(
+                                    color = fontColor,
+                                    start = Offset(startX, size.height / 2f),
+                                    end = Offset(startX + barWidth, size.height / 2f),
+                                    strokeWidth = strokePx
+                                )
+                            }
+                        }
+                        .fillMaxHeight(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    // Fraction line
-                    Canvas (
+                    Box (
                         modifier = Modifier
-                            .fillMaxSize()
+                            .weight(0.4f),
+//                            .fillMaxWidth(),
+                        contentAlignment = Alignment.BottomCenter
                     ) {
-                        drawLine(
+                        // Numerator
+                        Text(
+                            text = if (numerator == "") "■" else numerator,
+                            autoSize = TextAutoSize.StepBased(),
+                            maxLines = 1,
                             color = fontColor,
-                            strokeWidth = this@BoxWithConstraints.maxHeight.value.sp.toPx() * fontSizeHeightWeight * 0.025f,
-                            start = Offset(
-                                x = 0f,
-                                y = size.height / 2
-                            ),
-                            end = Offset(
-                                x = size.width,
-                                y = size.height / 2
-                            )
+                            textAlign = TextAlign.Center,
+                            onTextLayout = { result ->
+                                numeratorWidthPx = result.size.width.toFloat()
+                            }
                         )
                     }
-                    Column {
-                        Box (
-                            modifier = Modifier
-                                .weight(0.5f)
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.BottomCenter
-                        ) {
-                            // Numerator
-                            Text(
-                                text = if (numerator == "") "■" else numerator,
-                                fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.475,
-                                color = fontColor,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                        Box (
-                            modifier = Modifier
-                                .weight(0.5f)
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.TopCenter
-                        ) {
-                            // Denominator
-                            Text(
-                                text = denominator?.let{ if (denominator == "") "■" else denominator }?: "□",
-                                fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.475f,
-                                color = fontColor
-                            )
-                        }
+                    Box (
+                        modifier = Modifier
+                            .weight(0.4f),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        // Denominator
+                        Text(
+                            text = denominator?.let{ if (denominator == "") "■" else denominator }?: "□",
+                            autoSize = TextAutoSize.StepBased(),
+                            maxLines = 1,
+                            textAlign = TextAlign.Center,
+                            color = fontColor,
+                            onTextLayout = { result ->
+                                denominatorWidthPx = result.size.width.toFloat()
+                            }
+                        )
                     }
                 }
-//            }
             }
             if (roundResult != null && roundResult != RoundResult.EXACT)
                 Text(
@@ -123,9 +121,9 @@ fun NumberText (decimal: String?,
                         RoundResult.UP -> "↑"
                         RoundResult.DOWN -> "↓"
                     },
-                    fontSize = this@BoxWithConstraints.maxHeight.value.sp * fontSizeHeightWeight * 0.75,
                     color = fontColor,
-                    modifier = Modifier
+                    autoSize = TextAutoSize.StepBased(),
+                    maxLines = 1
                 )
         }
     }
@@ -133,9 +131,7 @@ fun NumberText (decimal: String?,
 
 @Composable
 fun NumberText (number: Number?,
-                modifier: Modifier,
                 fontColor: Color,
-                fontSizeHeightWeight: Float,
                 maxDenominator: Deci?,
                 decimalPrecision: Int = 3) {
     if (number != null) {
@@ -181,9 +177,7 @@ fun NumberText (number: Number?,
                 decimal = number.toDeci().trim(decimalPrecision),
                 numerator = null,
                 denominator = null,
-                modifier = modifier,
                 fontColor = fontColor,
-                fontSizeHeightWeight = fontSizeHeightWeight,
                 roundResult = null
             )
         else {
@@ -196,9 +190,7 @@ fun NumberText (number: Number?,
                 decimal = newSimplifiedFraction.inches.trim(decimalPrecision),
                 numerator = newSimplifiedFraction.fraction?.numerator?.trim(decimalPrecision),
                 denominator = newSimplifiedFraction.fraction?.denominator?.trim(decimalPrecision),
-                modifier = modifier,
                 fontColor = fontColor,
-                fontSizeHeightWeight = fontSizeHeightWeight,
                 roundResult = newSimplifiedFraction.roundResult
             )
         }

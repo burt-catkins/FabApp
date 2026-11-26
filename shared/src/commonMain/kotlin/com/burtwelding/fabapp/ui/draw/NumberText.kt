@@ -21,10 +21,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.burtwelding.fabapp.Fraction
-import com.burtwelding.fabapp.ImperialFractionalResult
-import com.burtwelding.fabapp.Number
-import com.burtwelding.fabapp.RoundResult
+import com.burtwelding.fabapp.number.Fraction
+import com.burtwelding.fabapp.number.Number
+import com.burtwelding.fabapp.number.RoundResult
 import deci.trim
 import org.kimplify.deci.Deci
 import org.kimplify.deci.RoundingMode
@@ -133,6 +132,11 @@ fun NumberText (number: Number?,
                 fontColor: Color,
                 maxDenominator: Deci?,
                 decimalPrecision: Int = 3) {
+    data class ImperialFractionalResult (
+        val inches: Deci,
+        val fraction: Fraction?,
+        val roundResult: RoundResult
+    )
     if (number != null) {
         fun getFractionalNumber (decimal: Deci, denominator: Deci?): ImperialFractionalResult {
             // TODO: Implement unit conversion

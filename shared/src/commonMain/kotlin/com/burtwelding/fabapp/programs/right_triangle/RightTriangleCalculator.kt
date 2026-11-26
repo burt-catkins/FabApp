@@ -11,8 +11,7 @@ import deci.trig.tan
 import org.kimplify.deci.Deci
 import org.kimplify.deci.math.sqrt
 
-class RightTriangleCalculator (val operand1: Operand,
-                               val operand2: Operand) {
+class RightTriangleCalculator {
 
     sealed interface Operand { val value: Deci }
     data class Rise (override val value: Deci): Operand
@@ -21,21 +20,26 @@ class RightTriangleCalculator (val operand1: Operand,
     data class TopAngle (override val value: Deci): Operand
     data class BottomAngle (override val value: Deci): Operand
 
-    init {
+    val operand1: Operand
+    val operand2: Operand
+    val calculation: Map<RightTriangleOperandType, Deci>
+
+    constructor (operand1: Operand, operand2: Operand) {
         require(operand1::class != operand2::class) { "Both operands are the same type! THE FUHHHHH" }
         if (operand1::class == TopAngle::class && operand2::class == BottomAngle::class)
             throw IllegalArgumentException("Cant have both Operands be angles! Pointless!")
         if (operand2::class == TopAngle::class && operand1::class == BottomAngle::class)
             throw IllegalArgumentException("bruh both operands are angles! whaaaaat?")
-    }
-
-    fun calculate () = RightTriangleOperandType.entries.associateWith { operandType ->
-        when (operandType) {
-            RightTriangleOperandType.RISE -> getRise()
-            RightTriangleOperandType.RUN -> getRun()
-            RightTriangleOperandType.DIAGONAL -> getDiagonal()
-            RightTriangleOperandType.TOP_ANGLE -> getTopAngle()
-            RightTriangleOperandType.BOTTOM_ANGLE -> getBottomAngle()
+        this.operand1 = operand1
+        this.operand2 = operand2
+        this.calculation = RightTriangleOperandType.entries.associateWith { operandType ->
+            when (operandType) {
+                RightTriangleOperandType.RISE -> getRise()
+                RightTriangleOperandType.RUN -> getRun()
+                RightTriangleOperandType.DIAGONAL -> getDiagonal()
+                RightTriangleOperandType.TOP_ANGLE -> getTopAngle()
+                RightTriangleOperandType.BOTTOM_ANGLE -> getBottomAngle()
+            }
         }
     }
 

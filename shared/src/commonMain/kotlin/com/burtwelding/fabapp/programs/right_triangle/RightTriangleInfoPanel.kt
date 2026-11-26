@@ -22,13 +22,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.burtwelding.fabapp.Fraction
-import com.burtwelding.fabapp.ImperialFraction
+import com.burtwelding.fabapp.number.Fraction
+import com.burtwelding.fabapp.number.ImperialFraction
 import com.burtwelding.fabapp.darken
 import org.kimplify.deci.Deci
-import com.burtwelding.fabapp.Number
+import com.burtwelding.fabapp.number.Number
 import com.burtwelding.fabapp.gray
-import com.burtwelding.fabapp.programs.right_triangle.RightTriangleData.maxDenominator
+import com.burtwelding.fabapp.AppData.maxDenominator
 import com.burtwelding.fabapp.programs.right_triangle.RightTriangleData.numbers
 import com.burtwelding.fabapp.programs.right_triangle.RightTriangleData.operands
 import com.burtwelding.fabapp.ui.draw.NumberText
@@ -118,7 +118,7 @@ fun RightTriangleInfoPanel () {
                                     val calculation = RightTriangleCalculator(
                                         getOperand(firstOperandType),
                                         getOperand(secondOperandType)
-                                    ).calculate()
+                                    ).calculation
                                     RightTriangleData.rightTriangleCalculation = calculation
                                     numbers[RightTriangleOperandType.RISE] = Number(calculation[RightTriangleOperandType.RISE]?: error("yoooooooo the rise calculation is null!!"))
                                     numbers[RightTriangleOperandType.RUN] = Number(calculation[RightTriangleOperandType.RUN]?: error("yoooooooo the RUN calculation is null!!"))

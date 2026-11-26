@@ -1,6 +1,5 @@
 package com.burtwelding.fabapp.storage
 
-import com.burtwelding.fabapp.item.Item
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable

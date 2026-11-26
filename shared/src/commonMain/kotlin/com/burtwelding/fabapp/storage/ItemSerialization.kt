@@ -1,6 +1,5 @@
 package com.burtwelding.fabapp.storage
 
-import com.burtwelding.fabapp.item.Item
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encoding.Decoder

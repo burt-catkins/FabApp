@@ -3,7 +3,7 @@ package com.burtwelding.fabapp.numpad
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.burtwelding.fabapp.Number
+import com.burtwelding.fabapp.number.Number
 
 
 class NumpadData {

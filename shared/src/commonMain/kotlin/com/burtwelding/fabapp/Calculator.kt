@@ -1,36 +1,9 @@
 package com.burtwelding.fabapp
 
-import com.burtwelding.fabapp.item.Item
-import com.burtwelding.fabapp.item.Length
 import org.kimplify.deci.Deci
 import org.kimplify.deci.DeciConstants
-import org.kimplify.deci.RoundingMode
 
 object Calculator {
-    fun convertInchesToMetric (inchesDecimal: Deci, metricLengthTypeDesired: Metric): Length =
-        Length(
-            displayUnits = metricLengthTypeDesired,
-            baseUnitDecimalValue = inchesDecimal.times(
-                when (metricLengthTypeDesired) {
-                    Metric.MILLIMETERS -> Deci("25.4")
-                    Metric.CENTIMETERS -> Deci("2.54")
-                    Metric.METERS -> Deci("0.0254")
-                }
-            )
-        )
-    fun convertMetricToInches (metricDecimal: Length): Length =
-        Length(
-            displayUnits = Imperial.INCH,
-            baseUnitDecimalValue = metricDecimal.baseUnitDecimalValue * when (metricDecimal.displayUnits) {
-                Metric.MILLIMETERS -> Deci("0.03937007874015748031")
-                Metric.CENTIMETERS -> Deci("0.3937007874015748031")
-                Metric.METERS -> Deci("39.37007874015748031")
-                Imperial.INCH, Imperial.FOOT, Imperial.YARD, null ->
-                    throw IllegalArgumentException("bruh aint no metric bruh")
-            }
-        )
-    //fun getTotalWeightInPounds (pieces: List<Piece>, metalType: MetalType) =
-    //    pieces.map { piece -> piece.getWeightCubicFeet()?: throw AssertionError("All pieces must have type of metal defined") }.sumDeci()
     fun convertRadiansToDegrees (radianAmount: Deci) =
         radianAmount.times(Deci(180)).div(DeciConstants.PI)
     fun convertDegreesToRadians (degreeAmount: Deci) =

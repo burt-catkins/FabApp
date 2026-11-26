@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
-import com.burtwelding.fabapp.AppState
+import com.burtwelding.fabapp.AppData
 import com.burtwelding.fabapp.Programs
 import com.burtwelding.fabapp.darken
 import fabapp.shared.generated.resources.Res
@@ -32,7 +32,7 @@ fun ProgramPane (modifier: Modifier) {
                        color: Color
     ) {
         Box(
-            Modifier.clickable { AppState.currentProgram = program },
+            Modifier.clickable { AppData.currentProgram = program },
         ) {
             Image(
                 painter = painterResource(icon),

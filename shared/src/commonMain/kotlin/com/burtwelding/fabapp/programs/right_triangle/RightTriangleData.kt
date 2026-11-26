@@ -4,8 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.burtwelding.fabapp.ImperialFraction
-import com.burtwelding.fabapp.Number
+import com.burtwelding.fabapp.number.Number
 import com.burtwelding.fabapp.numpad.NumpadData
 import org.kimplify.deci.Deci
 
@@ -14,12 +13,12 @@ object RightTriangleData {
         operands.clear()
         numbers.clear()
     }
-    var maxDenominator by mutableStateOf(ImperialFraction.THIRTY_SECONDS)
+
     var rightTriangleCalculation by mutableStateOf(
         RightTriangleCalculator(
             operand1 = RightTriangleCalculator.Rise(Deci.ONE),
             operand2 = RightTriangleCalculator.Run(Deci.ONE),
-        ).calculate()
+        ).calculation
     )
     val operands = mutableStateMapOf<RightTriangleOperandType, Number>()
     val numbers = mutableStateMapOf<RightTriangleOperandType, Number>()

@@ -81,7 +81,6 @@ fun NumberText (decimal: String?,
                     Box (
                         modifier = Modifier
                             .weight(0.4f),
-//                            .fillMaxWidth(),
                         contentAlignment = Alignment.BottomCenter
                     ) {
                         // Numerator

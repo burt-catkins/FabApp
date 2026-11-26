@@ -59,8 +59,7 @@ fun RightTriangleInfoPanel () {
         centeredComposable: @Composable () -> Unit
     ) {
         Tile(
-            modifier
-                .clickable { action() },
+            modifier.clickable { action() },
             color,
             subTile = {
                 Box (
@@ -175,6 +174,7 @@ fun RightTriangleInfoPanel () {
                             Box(
                                 modifier = Modifier
                                     .fillMaxHeight(0.8f)
+                                    .fillMaxWidth(0.9f)
                             ) {
                                 NumberText(
                                     number = numbers[operandType],
@@ -270,7 +270,7 @@ fun RightTriangleInfoPanel () {
                     if (input == null)
                         ""
                     else if (input <= Deci.ZERO)
-                        "Rise be greater than 0"
+                        "Rise must be greater than 0"
                     else if (
                         run {
                             val diagonal = operands[OperandType.DIAGONAL]
@@ -296,7 +296,7 @@ fun RightTriangleInfoPanel () {
                     if (input == null)
                         ""
                     else if (input <= Deci.ZERO)
-                        "Run be greater than 0"
+                        "Run must be greater than 0"
                     else if (
                         run {
                             val diagonal = operands[OperandType.DIAGONAL]
@@ -322,7 +322,7 @@ fun RightTriangleInfoPanel () {
                     if (input == null)
                         ""
                     else if (input <= Deci.ZERO)
-                        "Diagonal be greater than 0"
+                        "Diagonal must be greater than 0"
                     else if (
                         run {
                             val rise = operands[OperandType.RISE]

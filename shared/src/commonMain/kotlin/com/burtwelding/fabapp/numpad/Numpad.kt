@@ -85,8 +85,8 @@ fun Numpad (numpadData: NumpadData) {
                         painter = painterResource(icon),
                         contentDescription = description,
                         modifier = Modifier
-                            .size(60.dp)
                             .align(Alignment.Center)
+                            .fillMaxWidth(0.85f)
                     )
                 }
             }
@@ -194,7 +194,8 @@ fun Numpad (numpadData: NumpadData) {
                     ) {
                         Box (
                             modifier = Modifier
-                                .fillMaxHeight(0.8f),
+                                .fillMaxHeight(0.8f)
+                                .fillMaxWidth(0.9f),
                         ) {
                             NumberText(
                                 decimal = numpadData.numberNumpadBuffer.buffer,

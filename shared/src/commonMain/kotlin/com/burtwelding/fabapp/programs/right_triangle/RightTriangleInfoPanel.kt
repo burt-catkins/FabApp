@@ -31,7 +31,7 @@ import com.burtwelding.fabapp.gray
 import com.burtwelding.fabapp.AppData.maxDenominator
 import com.burtwelding.fabapp.programs.right_triangle.RightTriangleData.numbers
 import com.burtwelding.fabapp.programs.right_triangle.RightTriangleData.operands
-import com.burtwelding.fabapp.ui.draw.NumberText
+import com.burtwelding.fabapp.ui.NumberText
 import fabapp.shared.generated.resources.Res
 import fabapp.shared.generated.resources.icon_reset
 import org.jetbrains.compose.resources.painterResource

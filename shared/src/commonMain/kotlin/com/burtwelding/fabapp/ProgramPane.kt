@@ -1,4 +1,4 @@
-package com.burtwelding.fabapp.ui.draw
+package com.burtwelding.fabapp
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -14,9 +14,6 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
-import com.burtwelding.fabapp.AppData
-import com.burtwelding.fabapp.Programs
-import com.burtwelding.fabapp.darken
 import fabapp.shared.generated.resources.Res
 import fabapp.shared.generated.resources.icon_program_miter
 import fabapp.shared.generated.resources.icon_program_righttriangle

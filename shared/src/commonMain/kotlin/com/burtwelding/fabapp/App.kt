@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.burtwelding.fabapp.programs.miter.Miter
 import com.burtwelding.fabapp.programs.right_triangle.RightTriangle
-import com.burtwelding.fabapp.ui.draw.ProgramPane
 
 @Composable
 @Preview

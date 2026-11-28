@@ -27,7 +27,7 @@ import com.burtwelding.fabapp.number.Fraction
 import com.burtwelding.fabapp.number.Number
 import com.burtwelding.fabapp.number.RoundResult
 import com.burtwelding.fabapp.darken
-import com.burtwelding.fabapp.ui.draw.NumberText
+import com.burtwelding.fabapp.ui.NumberText
 import fabapp.shared.generated.resources.Res
 import fabapp.shared.generated.resources.icon_numpad_backspace
 import fabapp.shared.generated.resources.icon_numpad_clear
